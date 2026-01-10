@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Ficha de RPG - Sistema Phantasia" />
+    <link rel="apple-touch-icon" href="./logo192.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React e ReactDOM via CDN para funcionamento local -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+
+    <title>Ficha RPG - Phantasia</title>
+  </head>
+  <body>
+    <noscript
+      >Você precisa habilitar JavaScript para executar este app.</noscript
+    >
+    <div id="root"></div>
+
+    <!-- Script para carregar o app React -->
+    <script>
+      // Carrega os componentes React
+      Promise.all([
+        // Aqui você precisaria incluir todos os seus arquivos JS compilados
+        // Por enquanto, vamos carregar um script único
+      ]).then(() => {
+        // Inicializa o React app quando tudo estiver carregado
+        console.log("App Phantasia carregado!");
+      });
+    </script>
+  </body>
+</html>
