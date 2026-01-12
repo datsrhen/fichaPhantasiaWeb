@@ -39,6 +39,7 @@ export const initialState = {
     pcs: { current: 0, max: 0 },
     dd: { current: 0, max: 0 }, // NOVO CAMPO DD
     traumas: { current: 0, max: 0, description: "" },
+    bonusEspacos: 0,
   },
 
   // Dados de Ancestralidades

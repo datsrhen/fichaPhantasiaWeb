@@ -1,6 +1,7 @@
 // bagagem.js - MODIFICADO COM TRAUMAS AJUSTADO NO CABEÇALHO
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, X, Sword } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 // Importando dados das planilhas
 import { armas as dadosArmas } from "./armas";
@@ -22,6 +23,7 @@ import {
   LockToggleButton,
   HeaderRecursos,
   ToggleEditarItem,
+  StatusPanel,
 } from "./ui-components";
 
 // Import do contexto
@@ -60,8 +62,23 @@ const Bagagem = () => {
     (item) => !itensEquipados.some((equipado) => equipado.id === item.id)
   );
 
-  const espacosDisponiveis = calcularEspacos();
+  const espacosBase = calcularEspacos();
+  const bonusEspacos = recursos.bonusEspacos ?? 0;
+  const espacosDisponiveis = espacosBase + bonusEspacos;
+
   const espacosUsados = itensOcupandoEspaco.length;
+
+  // Botões +/- para bônus de espaços
+
+  const incrementarBonusEspacos = () => {
+  const bonusAtual = recursos.bonusEspacos ?? 0;
+    atualizarRecursos({ bonusEspacos: bonusAtual + 1 });
+  };
+
+  const decrementarBonusEspacos = () => {
+    const bonusAtual = recursos.bonusEspacos ?? 0;
+    atualizarRecursos({ bonusEspacos: Math.max(0, bonusAtual - 1) });
+  };
 
   // Processar dados de todas as categorias para autocompletar
   useEffect(() => {
@@ -574,13 +591,42 @@ const Bagagem = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Equipamentos e Bagagem
               </h1>
+
+                  <StatusPanel  
+                    icon={espacosUsados === 0 ? CheckCircle2 : AlertCircle}
+                    iconColor={espacosDisponiveis === 0 ? "red" : "blue"}
+                    title="Restantes"
+                    value={espacosDisponiveis}
+                    valueColor="blue"
+                  />
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={decrementarBonusEspacos}
+                      disabled={fichaTrancada}
+                      className="px-2 py-1 rounded border text-sm disabled:opacity-50"
+                      title="Diminuir bônus de espaços"
+                    >
+                      -
+                    </button>
+
+                    <span className="text-sm text-gray-600 min-w-[36px] text-center">
+                      +{bonusEspacos}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={incrementarBonusEspacos}
+                      disabled={fichaTrancada}
+                      className="px-2 py-1 rounded border text-sm disabled:opacity-50"
+                      title="Aumentar bônus de espaços"
+                    >
+                      +
+                    </button>                 
+                  </div>
+              
               <div className="text-sm text-gray-600">
-                Espaços usados: {espacosUsados}/{espacosDisponiveis}
-                {itensEquipados.length > 0 && (
-                  <span className="text-green-600 ml-2">
-                    (+{itensEquipados.length} equipado(s))
-                  </span>
-                )}
                 <br />
                 (INT:{" "}
                 {atributos.INT.base +
