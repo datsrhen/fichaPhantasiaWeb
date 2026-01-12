@@ -24,6 +24,7 @@ import {
   HeaderRecursos,
   ToggleEditarItem,
   StatusPanel,
+  BonusInput,
 } from "./ui-components";
 
 // Import do contexto
@@ -68,7 +69,7 @@ const Bagagem = () => {
 
   const espacosUsados = itensOcupandoEspaco.length;
 
-  // Botões +/- para bônus de espaços
+  // Func dos botões +/- para bônus de espaços
 
   const incrementarBonusEspacos = () => {
   const bonusAtual = recursos.bonusEspacos ?? 0;
@@ -590,43 +591,10 @@ const Bagagem = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Equipamentos e Bagagem
-              </h1>
+              </h1> 
+            </div>
 
-                  <StatusPanel  
-                    icon={espacosUsados === 0 ? CheckCircle2 : AlertCircle}
-                    iconColor={espacosDisponiveis === 0 ? "red" : "blue"}
-                    title="Restantes"
-                    value={espacosDisponiveis}
-                    valueColor="blue"
-                  />
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={decrementarBonusEspacos}
-                      disabled={fichaTrancada}
-                      className="px-2 py-1 rounded border text-sm disabled:opacity-50"
-                      title="Diminuir bônus de espaços"
-                    >
-                      -
-                    </button>
-
-                    <span className="text-sm text-gray-600 min-w-[36px] text-center">
-                      +{bonusEspacos}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={incrementarBonusEspacos}
-                      disabled={fichaTrancada}
-                      className="px-2 py-1 rounded border text-sm disabled:opacity-50"
-                      title="Aumentar bônus de espaços"
-                    >
-                      +
-                    </button>                 
-                  </div>
-              
-              <div className="text-sm text-gray-600">
+                          {/* <div className="text-sm text-gray-600">
                 <br />
                 (INT:{" "}
                 {atributos.INT.base +
@@ -637,8 +605,7 @@ const Bagagem = () => {
                   atributos.RES.ancestral +
                   atributos.RES.bonus}{" "}
                 × 4)
-              </div>
-            </div>
+              </div>*/}
 
             {/* NOVO: Recursos E TRAUMAS AJUSTADO no cabeçalho */}
             <div className="flex flex-col items-end gap-2">
@@ -690,13 +657,35 @@ const Bagagem = () => {
           {/* Coluna da Bagagem - 60% da largura */}
           <div className="flex-1 lg:flex-[3]">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              {/* MODIFICADO: action SEMPRE true agora */}
-              <SectionHeader
-                title="Bagagem"
-                action={true}
-                actionText="Adicionar Item"
-                onAction={adicionarItem}
-              />
+              <div className="flex-1 gap-2 mb-4">
+                {/* Esquerda: título Bagagem */}
+                <SectionHeader
+                  title="Bagagem"
+                  action={true}
+                  actionText="Adicionar Item"
+                  onAction={adicionarItem}
+                />
+
+                {/* Direita: status + bônus */}
+                <div className="flex items-center gap-2">
+                  <StatusPanel  
+                    icon={espacosUsados === 0 ? CheckCircle2 : AlertCircle}
+                    iconColor={espacosDisponiveis === 0 ? "red" : "blue"}
+                    title="Restantes"
+                    value={espacosDisponiveis}
+                    valueColor="blue"
+                  />
+
+                  <BonusInput
+                    value={bonusEspacos}
+                    onIncrement={incrementarBonusEspacos}
+                    onDecrement={decrementarBonusEspacos}
+                    onChange={(e) =>
+                      atualizarRecursos({ bonusEspacos: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
 
               {/* Lista de Itens */}
               <div className="space-y-4">
