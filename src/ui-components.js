@@ -221,7 +221,7 @@ export const StatusPanel = ({
           <Icon className={iconColorClasses[iconColor]} size={14} />
           <span className="font-medium text-gray-700">{title}</span>
         </div>
-        <span className={`font-bold ${valueColorClasses[valueColor]}`}>
+        <span className={`font-bold px-2 ${valueColorClasses[valueColor]}`}>
           {value}
         </span>
       </div>
@@ -275,6 +275,32 @@ export const SectionHeader = ({
           </button>
         )}
       </div>
+    </div>
+  );
+};
+
+export const abrirAnotacoes = (secaoId) => {
+  setSecaoIdAtiva(secaoId);
+  setIsAnotacoesOpen(true);
+}
+
+export const fecharAnotacoes = () => {
+setIsAnotacoesOpen(false);
+setSecaoIdAtiva(null);
+}
+
+export const renderCabecalhoSecao = (secaoId) => {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      {secaoId && (
+        <button
+          type="button"
+          className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+          onClick={() => abrirAnotacoes(secaoId)}
+        >
+          Anotações
+        </button>
+      )}
     </div>
   );
 };
@@ -560,3 +586,4 @@ export const HeaderRecursos = ({
     </div>
   );
 };
+

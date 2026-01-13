@@ -50,6 +50,7 @@ import {
   LockToggleButton,
   RecursoField,
   TraumaField,
+  renderCabecalhoSecao,
 } from "./ui-components";
 
 // Import do contexto
@@ -77,8 +78,51 @@ const FichaCJphant = () => {
     talentosSelecionados,
     bonusHabilidades,
     recursos,
-    movimentacao, // NOVO: movimentação do contexto
+    movimentacao,
+    anotacoes,
   } = state;
+
+  // Controla se o modal "Anotações" está aberto
+  const [isAnotacoesOpen, setIsAnotacoesOpen] = useState(false);
+  // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
+  const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
+  // Pega o texto salvo para a seção ativa.
+  const textoAnotacoesAtual = secaoIdAtiva
+    ? (state.anotacoes?.[secaoAtiva] ?? "")
+    :   "";
+
+    // Abre o modal e marca qual seção estamos editando
+  function abrirAnotacoes(secaoId) {
+    setSecaoIdAtiva(secaoId);
+    setIsAnotacoesOpen(true);
+  }
+  // Fecha o modal e limpa a seção ativa (boa prática)
+  function fecharAnotacoes() {
+    setIsAnotacoesOpen(false);
+    setSecaoIdAtiva(null);
+  }
+
+
+  function atualizarTextoDaSecao (textoNovo) {
+    if (!secaoIdAtiva) return;
+    actions.updateAnotacoes({secaoAtiva: textoNovo});
+  }
+
+  const renderCabecalhoSecao = (secaoId) => {
+    return (
+      <div className="flex items-center justify-between gap-2">
+        {secaoId && (
+          <button
+            type="button"
+            className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+            onClick={() => abrirAnotacoes(secaoId)}
+          >
+            Anotações
+          </button>
+        )}
+      </div>
+    );
+  };  
 
   // Estados locais (que não precisam ser persistidos entre navegações)
   const [pontosUsados, setPontosUsados] = useState(7);
@@ -181,6 +225,7 @@ const FichaCJphant = () => {
     const total = Object.values(atributos).reduce(
       (acc, val) => acc + val.base,
       0
+    
     );
     setPontosUsados(total);
   }, [atributos]);
@@ -661,6 +706,7 @@ const FichaCJphant = () => {
     });
   };
 
+
   // Funções para Origens
   const toggleOrigem = (tipo) => {
     if (origensConfirmadas) return;
@@ -717,6 +763,8 @@ const FichaCJphant = () => {
     actions.updateOrigens({ origensConfirmadas: true });
   };
 
+
+
   // Funções para Talentos - MODIFICADAS para nova estratégia
   const toggleTalentos = (tipo) => {
     if (fichaTrancada) return; // Não permite abrir/fechar quando ficha está trancada
@@ -734,6 +782,8 @@ const FichaCJphant = () => {
     };
     actions.updateTalentos(novosTalentos);
   };
+
+
 
   // Função auxiliar para renderizar campo condicional
   const renderCampo = (rotulo, valor) => {
@@ -767,12 +817,12 @@ const FichaCJphant = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               Ficha de Personagem - Phantasia
             </h1>
+
             <LockToggleButton
               isLocked={fichaTrancada}
               onToggle={alternarTrancaFicha}
             />
           </div>
-
           {/* CAMPOS DE DESCRIÇÃO - MODIFICADO COM NOVO LAYOUT DE RECURSOS */}
           <div className="mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
             {/* Coluna 1-2: Nome e Idade lado a lado + Convicção e Vício */}
@@ -1108,7 +1158,50 @@ const FichaCJphant = () => {
           <div className="flex flex-col gap-6">
             {/* Seção de Atributos - Mantém largura estreita */}
             <div className="w-80 bg-white rounded-lg shadow-lg p-4">
-              <SectionHeader title="Atributos" />
+              <SectionHeader title="Atributos">
+                {renderCabecalhoSecao("atributos")}
+              </SectionHeader>
+              {/* Seção de Pontos Restantes */}
+              {isAnotacoesOpen && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center"
+                  // Clique no fundo (overlay) fecha o modal
+                  onClick={fecharAnotacoes}
+                >
+                  {/* Overlay escuro */}
+                  <div className="absolute inset-0 bg-black/50" />
+
+                  {/* Card do modal */}
+                  <div
+                    className="relative w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl"
+                    // Impede o clique dentro do card de fechar o modal
+                    onClick={(evento) => evento.stopPropagation()}
+                  >
+                    {/* Cabeçalho */}
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-lg font-semibold">
+                        Anotações{secaoIdAtiva ? ` — ${secaoIdAtiva}` : ""}
+                      </h3>
+
+                      <button
+                        className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+                        onClick={fecharAnotacoes}
+                        type="button"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+
+                    {/* Input de texto */}
+                    <textarea
+                      className="mt-3 w-full min-h-[120px] rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-blue-300"
+                      placeholder="Escreva suas anotações aqui..."
+                      value={textoAnotacoesAtual}
+                      onChange={(evento) => atualizarTextoDaSecao(evento.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
 
               {!atributosTrancados && (
                 <StatusPanel
@@ -1666,7 +1759,9 @@ const FichaCJphant = () => {
                       )}/3)`
                     : ""
                 }
-              />
+              >
+                {renderCabecalhoSecao("origens")}
+              </SectionHeader>
 
               {!origensConfirmadas && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -2066,6 +2161,7 @@ const FichaCJphant = () => {
                               </div>
                             ) : (
                               <select
+                
                                 value={hab.atributo2}
                                 onChange={(e) =>
                                   atualizarHabilidade(
@@ -2134,6 +2230,7 @@ const FichaCJphant = () => {
             <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col">
               <SectionHeader title="Talentos" action={false}>
                 <ModeIndicator isLocked={fichaTrancada} />
+                {renderCabecalhoSecao("talentos")}
               </SectionHeader>
 
               {/* Área de rolagem para os talentos - MODIFICAÇÃO: max-height condicional */}
@@ -2287,5 +2384,4 @@ const FichaCJphant = () => {
     </div>
   );
 };
-
 export default FichaCJphant;

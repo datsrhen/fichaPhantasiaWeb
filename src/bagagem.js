@@ -72,7 +72,7 @@ const Bagagem = () => {
   // Func dos botões +/- para bônus de espaços
 
   const incrementarBonusEspacos = () => {
-  const bonusAtual = recursos.bonusEspacos ?? 0;
+    const bonusAtual = recursos.bonusEspacos ?? 0;
     atualizarRecursos({ bonusEspacos: bonusAtual + 1 });
   };
 
@@ -143,7 +143,7 @@ const Bagagem = () => {
 
   // Adicionar novo item vazio
   const adicionarItem = () => {
-    if (espacosUsados >= espacosDisponiveis) return;
+    // if (espacosUsados >= espacosDisponiveis) return;
 
     const novoItem = {
       id: Date.now(),
@@ -591,21 +591,26 @@ const Bagagem = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Equipamentos e Bagagem
-              </h1> 
-            </div>
+              </h1>
 
-                          {/* <div className="text-sm text-gray-600">
-                <br />
-                (INT:{" "}
-                {atributos.INT.base +
-                  atributos.INT.ancestral +
-                  atributos.INT.bonus}{" "}
-                + RES:{" "}
-                {atributos.RES.base +
-                  atributos.RES.ancestral +
-                  atributos.RES.bonus}{" "}
-                × 4)
-              </div>*/}
+              <StatusPanel
+                className="flex px-4 items-center"
+                icon={espacosDisponiveis < espacosUsados ? AlertCircle : CheckCircle2}
+                iconColor={espacosDisponiveis < espacosUsados ? "red" : "blue"}
+                title="Capacidade:"
+                value={`${espacosUsados}/${espacosDisponiveis}`}
+                valueColor={espacosDisponiveis < espacosUsados ? "red" : "blue"}
+              >
+                <BonusInput
+                  value={bonusEspacos}
+                  onIncrement={incrementarBonusEspacos}
+                  onDecrement={decrementarBonusEspacos}
+                  onChange={(e) =>
+                    atualizarRecursos({ bonusEspacos: e.target.value })
+                  }
+                />
+              </StatusPanel>
+            </div>
 
             {/* NOVO: Recursos E TRAUMAS AJUSTADO no cabeçalho */}
             <div className="flex flex-col items-end gap-2">
@@ -665,26 +670,6 @@ const Bagagem = () => {
                   actionText="Adicionar Item"
                   onAction={adicionarItem}
                 />
-
-                {/* Direita: status + bônus */}
-                <div className="flex items-center gap-2">
-                  <StatusPanel  
-                    icon={espacosUsados === 0 ? CheckCircle2 : AlertCircle}
-                    iconColor={espacosDisponiveis === 0 ? "red" : "blue"}
-                    title="Restantes"
-                    value={espacosDisponiveis}
-                    valueColor="blue"
-                  />
-
-                  <BonusInput
-                    value={bonusEspacos}
-                    onIncrement={incrementarBonusEspacos}
-                    onDecrement={decrementarBonusEspacos}
-                    onChange={(e) =>
-                      atualizarRecursos({ bonusEspacos: e.target.value })
-                    }
-                  />
-                </div>
               </div>
 
               {/* Lista de Itens */}
@@ -893,6 +878,7 @@ const Bagagem = () => {
               <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Manobras</h2>
                 <ModeIndicator isLocked={fichaTrancada} />
+                {renderCabecalhoSecao("manobras")}
               </div>
 
               {/* Área de rolagem para as manobras - MANTIDA a lógica original */}
