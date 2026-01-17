@@ -1,5 +1,5 @@
 // FichaCJphant.js - MODIFICADO COM CAMPOS DE RECURSOS SEMPRE EDITÁVEIS
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -50,12 +50,20 @@ import {
   LockToggleButton,
   RecursoField,
   TraumaField,
-  renderCabecalhoSecao,
 } from "./ui-components";
 
 // Import do contexto
 import { useFicha } from "./FichaContext";
 
+function formatarDataPtBr(isoString) {
+  if (!isoString) return "";
+  const data = new Date(isoString);
+
+  return data.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
 const FichaCJphant = () => {
   // Usar o contexto em vez de props
   const { state, actions } = useFicha();
@@ -86,29 +94,45 @@ const FichaCJphant = () => {
   const [isAnotacoesOpen, setIsAnotacoesOpen] = useState(false);
   // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
   const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
-  // Pega o texto salvo para a seção ativa.
-  const textoAnotacoesAtual = secaoIdAtiva
-    ? (state.anotacoes?.[secaoAtiva] ?? "")
-    :   "";
 
-    // Abre o modal e marca qual seção estamos editando
   function abrirAnotacoes(secaoId) {
+    const textoSalvoDaSecao = state.anotacoes?.[secaoId] ?? "";
     setSecaoIdAtiva(secaoId);
     setIsAnotacoesOpen(true);
   }
+
   // Fecha o modal e limpa a seção ativa (boa prática)
-  function fecharAnotacoes() {
+  function handleSalvarAnotacoes(secaoId, textoFinal) {
+    actions.updateAnotacoes({
+      [secaoId]: {
+        texto: textoFinal,
+        atualizadoEm: new Date().toISOString(),
+      },
+    });
+  }
+
+  function normalizarAnotacao(valor) {
+    if (!valor) return { textoInicial: "", atualizadoEm: null };
+
+    // formato antigo (string)
+    if (typeof valor === "string") {
+      return { textoInicial: valor, atualizadoEm: null };
+    }
+
+    // formato novo (objeto)
+    return {
+      textoInicial: valor.textoInicial ?? "",
+      atualizadoEm: valor.atualizadoEm ?? null,
+    };
+  }
+
+  function handleFecharModal() {
     setIsAnotacoesOpen(false);
     setSecaoIdAtiva(null);
   }
 
-
-  function atualizarTextoDaSecao (textoNovo) {
-    if (!secaoIdAtiva) return;
-    actions.updateAnotacoes({secaoAtiva: textoNovo});
-  }
-
   const renderCabecalhoSecao = (secaoId) => {
+    
     return (
       <div className="flex items-center justify-between gap-2">
         {secaoId && (
@@ -122,8 +146,7 @@ const FichaCJphant = () => {
         )}
       </div>
     );
-  };  
-
+  };
   // Estados locais (que não precisam ser persistidos entre navegações)
   const [pontosUsados, setPontosUsados] = useState(7);
 
@@ -160,7 +183,7 @@ const FichaCJphant = () => {
     pontosAncestralidadeDisponiveis,
     MAX_PONTOS_ANCESTRAL_ATRIBUTOS
   );
-
+  
   // Calcular ancestralidades ativas
   const ancestralidadesAtivas = React.useMemo(
     () => calcularAncestralidadesAtivas(caracteristicasSelecionadas),
@@ -178,11 +201,11 @@ const FichaCJphant = () => {
   );
 
   // DEBUG: Verificar se NÃO-VIVE está funcionando
-  console.log("=== DEBUG ATRIBUTOS PERMITIDOS ===");
+  /*   console.log("=== DEBUG ATRIBUTOS PERMITIDOS ===");
   console.log("Ancestralidades ativas:", ancestralidadesAtivas);
   console.log("Atributos permitidos:", atributosPermitidos);
   console.log("Configuração NÃO-VIVE:", atributosPorAncestralidade["NÃO-VIVE"]);
-  console.log("=== FIM DEBUG ATRIBUTOS PERMITIDOS ===");
+  console.log("=== FIM DEBUG ATRIBUTOS PERMITIDOS ==="); */
 
   // Calcular pontos já distribuídos nos atributos
   const pontosAncestralDistribuidos = Object.values(atributos).reduce(
@@ -260,15 +283,15 @@ const FichaCJphant = () => {
 
   // Processar dados da planilha de Ancestralidades - MODIFICADO COM DEBUG
   useEffect(() => {
-    console.log("=== DEBUG ANCESTRALIDADES ===");
-    console.log("Dados brutos da planilha:", dadosPlanilhaAncestralidades);
+  /*     console.log("=== DEBUG ANCESTRALIDADES ===");
+    console.log("Dados brutos da planilha:", dadosPlanilhaAncestralidades); */
 
     // Agrupar por ancestralidade
     const agrupado = {};
     dadosPlanilhaAncestralidades.forEach((item) => {
-      console.log(
+  /*       console.log(
         `Processando: ${item.Ancestralidade} - ${item.Nome} - Custo: ${item.Custo}`
-      );
+      ); */
 
       if (!agrupado[item.Ancestralidade]) {
         agrupado[item.Ancestralidade] = [];
@@ -281,15 +304,15 @@ const FichaCJphant = () => {
       });
     });
 
-    console.log("Ancestralidades agrupadas:", agrupado);
-    console.log("Chaves das ancestralidades:", Object.keys(agrupado));
+  /*     console.log("Ancestralidades agrupadas:", agrupado);
+    console.log("Chaves das ancestralidades:", Object.keys(agrupado)); */
 
     const dadosProcessados = Object.keys(agrupado).map((nome) => ({
       nome,
       caracteristicas: agrupado[nome],
     }));
 
-    console.log("Dados processados:", dadosProcessados);
+  /*     console.log("Dados processados:", dadosProcessados); */
     setAncestralidades(dadosProcessados);
 
     const abertasInicial = {};
@@ -297,7 +320,7 @@ const FichaCJphant = () => {
       abertasInicial[anc.nome] = false;
     });
     setAncestralidadesAbertas(abertasInicial);
-    console.log("=== FIM DEBUG ANCESTRALIDADES ===");
+  /*     console.log("=== FIM DEBUG ANCESTRALIDADES ==="); */
   }, []);
 
   // Processar dados da planilha de Origens
@@ -618,25 +641,25 @@ const FichaCJphant = () => {
   const toggleCaracteristica = (caracteristicaId) => {
     if (ancestralidadesConfirmadas) return;
 
-    console.log("=== DEBUG TOGGLE CARACTERÍSTICA ===");
-    console.log("Tentando alternar característica:", caracteristicaId);
+/*     console.log("=== DEBUG TOGGLE CARACTERÍSTICA ===");
+    console.log("Tentando alternar característica:", caracteristicaId); */
 
     // CORREÇÃO: Encontrar o último hífen para separar corretamente
     const lastHyphenIndex = caracteristicaId.lastIndexOf("-");
     const ancestralidadeNome = caracteristicaId.substring(0, lastHyphenIndex);
     const caracteristicaNome = caracteristicaId.substring(lastHyphenIndex + 1);
 
-    console.log("Ancestralidade extraída:", ancestralidadeNome);
-    console.log("Característica extraída:", caracteristicaNome);
+/*     console.log("Ancestralidade extraída:", ancestralidadeNome);
+    console.log("Característica extraída:", caracteristicaNome); */
 
     const ancestralidade = ancestralidades.find(
       (a) => a.nome === ancestralidadeNome
     );
 
-    console.log("Ancestralidade encontrada:", ancestralidade);
+/*     console.log("Ancestralidade encontrada:", ancestralidade); */
 
     if (!ancestralidade) {
-      console.log("Ancestralidade NÃO encontrada!");
+/*       console.log("Ancestralidade NÃO encontrada!"); */
       return;
     }
 
@@ -644,10 +667,10 @@ const FichaCJphant = () => {
       (c) => c.nome === caracteristicaNome
     );
 
-    console.log("Característica encontrada:", caracteristica);
+/*     console.log("Característica encontrada:", caracteristica); */
 
     if (!caracteristica) {
-      console.log("Característica NÃO encontrada!");
+/*       console.log("Característica NÃO encontrada!"); */
       return;
     }
 
@@ -655,12 +678,12 @@ const FichaCJphant = () => {
       ? pontosAncestralidadeUsados - caracteristica.custo
       : pontosAncestralidadeUsados + caracteristica.custo;
 
-    console.log("Custo atual:", pontosAncestralidadeUsados);
-    console.log("Novo custo:", novoCusto);
+/*     console.log("Custo atual:", pontosAncestralidadeUsados);
+    console.log("Novo custo:", novoCusto); */
 
     // Verificar se excede os pontos disponíveis
     if (novoCusto > PONTOS_ANCESTRALIDADE) {
-      console.log("Excede pontos disponíveis");
+/*       console.log("Excede pontos disponíveis"); */
       return;
     }
 
@@ -669,8 +692,8 @@ const FichaCJphant = () => {
       [caracteristicaId]: !caracteristicasSelecionadas[caracteristicaId],
     };
 
-    console.log("Novas características:", novasCaracteristicas);
-    console.log("=== FIM DEBUG TOGGLE CARACTERÍSTICA ===");
+/*     console.log("Novas características:", novasCaracteristicas);
+    console.log("=== FIM DEBUG TOGGLE CARACTERÍSTICA ==="); */
 
     actions.updateAncestralidades({
       caracteristicasSelecionadas: novasCaracteristicas,
@@ -808,6 +831,10 @@ const FichaCJphant = () => {
     actions.updateRecursos(novosRecursos);
   };
 
+  const anotacaoNormalizada = normalizarAnotacao(
+    state.anotacoes?.[secaoIdAtiva]
+  );
+  
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -817,7 +844,15 @@ const FichaCJphant = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               Ficha de Personagem - Phantasia
             </h1>
-
+              <ModalAnotacoes
+                isOpen={isAnotacoesOpen}
+                secaoId={secaoIdAtiva}
+                tituloSecao={secaoIdAtiva}
+                textoInicial={anotacaoNormalizada.texto}
+                atualizadoEm={formatarDataPtBr(anotacaoNormalizada.atualizadoEm)}
+                onSave={handleSalvarAnotacoes}
+                onClose={handleFecharModal}
+              />
             <LockToggleButton
               isLocked={fichaTrancada}
               onToggle={alternarTrancaFicha}
@@ -1161,48 +1196,8 @@ const FichaCJphant = () => {
               <SectionHeader title="Atributos">
                 {renderCabecalhoSecao("atributos")}
               </SectionHeader>
+                      
               {/* Seção de Pontos Restantes */}
-              {isAnotacoesOpen && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center"
-                  // Clique no fundo (overlay) fecha o modal
-                  onClick={fecharAnotacoes}
-                >
-                  {/* Overlay escuro */}
-                  <div className="absolute inset-0 bg-black/50" />
-
-                  {/* Card do modal */}
-                  <div
-                    className="relative w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl"
-                    // Impede o clique dentro do card de fechar o modal
-                    onClick={(evento) => evento.stopPropagation()}
-                  >
-                    {/* Cabeçalho */}
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-lg font-semibold">
-                        Anotações{secaoIdAtiva ? ` — ${secaoIdAtiva}` : ""}
-                      </h3>
-
-                      <button
-                        className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
-                        onClick={fecharAnotacoes}
-                        type="button"
-                      >
-                        Fechar
-                      </button>
-                    </div>
-
-                    {/* Input de texto */}
-                    <textarea
-                      className="mt-3 w-full min-h-[120px] rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-blue-300"
-                      placeholder="Escreva suas anotações aqui..."
-                      value={textoAnotacoesAtual}
-                      onChange={(evento) => atualizarTextoDaSecao(evento.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
               {!atributosTrancados && (
                 <StatusPanel
                   icon={pontosRestantes === 0 ? CheckCircle2 : AlertCircle}
@@ -2231,7 +2226,7 @@ const FichaCJphant = () => {
               <SectionHeader title="Talentos" action={false}>
                 <ModeIndicator isLocked={fichaTrancada} />
                 {renderCabecalhoSecao("talentos")}
-              </SectionHeader>
+                </SectionHeader>
 
               {/* Área de rolagem para os talentos - MODIFICAÇÃO: max-height condicional */}
               <div
@@ -2383,5 +2378,88 @@ const FichaCJphant = () => {
       </div>
     </div>
   );
-};
+}
+const ModalAnotacoes = memo(function ModalAnotacoes({
+    isOpen,
+    secaoId,
+    tituloSecao,
+    textoInicial,
+    onSave,
+    onClose,
+  }) {
+    const [textoRascunho, setTextoRascunho] = useState("");
+    
+    // Sempre que abrir (ou mudar de seção), carrega o texto inicial no rascunho
+    useEffect(() => {
+      if (!isOpen) return;
+      setTextoRascunho(textoInicial ?? "");
+    }, [isOpen, secaoId, textoInicial]);
+
+    // Se não estiver aberto, não renderiza nada
+    if (!isOpen) return null;
+    
+    function handleSalvarEFechar() {
+      // Só tenta salvar se tiver seção selecionada
+      if (!secaoId) return;
+      onSave(secaoId, textoRascunho);
+      onClose();
+    }
+    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        {/* Overlay fecha */}
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/50"
+          onClick={onClose}
+          aria-label="Fechar anotações"
+        />
+
+        {/* Card */}
+        <div
+          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl"
+          onClick={(evento) => evento.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-lg font-semibold">
+              Anotações{tituloSecao ? ` — ${tituloSecao}` : ""}
+            </h3>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+                onClick={(evento) => {
+                  evento.stopPropagation();
+                  onClose();
+                }}
+              >
+                Fechar
+              </button>
+
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+                onClick={(evento) => {
+                  evento.stopPropagation();
+                  handleSalvarEFechar();
+                }}
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            className="mt-3 w-full min-h-[120px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
+            placeholder="Escreva suas anotações aqui..."
+            value={textoRascunho}
+            onChange={(evento) => setTextoRascunho(evento.target.value)}
+            autoFocus
+          />
+        </div>
+      </div>
+    );
+  });
 export default FichaCJphant;
+

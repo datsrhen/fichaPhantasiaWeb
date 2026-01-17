@@ -595,7 +595,11 @@ const Bagagem = () => {
 
               <StatusPanel
                 className="flex px-4 items-center"
-                icon={espacosDisponiveis < espacosUsados ? AlertCircle : CheckCircle2}
+                icon={
+                  espacosDisponiveis < espacosUsados
+                    ? AlertCircle
+                    : CheckCircle2
+                }
                 iconColor={espacosDisponiveis < espacosUsados ? "red" : "blue"}
                 title="Capacidade:"
                 value={`${espacosUsados}/${espacosDisponiveis}`}
@@ -878,7 +882,6 @@ const Bagagem = () => {
               <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Manobras</h2>
                 <ModeIndicator isLocked={fichaTrancada} />
-                {renderCabecalhoSecao("manobras")}
               </div>
 
               {/* Área de rolagem para as manobras - MANTIDA a lógica original */}
