@@ -12,7 +12,6 @@ import {
   ChevronUp,
   Edit3,
 } from "lucide-react";
-
 // Importando as listas dos arquivos externos
 import { ancestralidades as dadosPlanilhaAncestralidades } from "./ancestralidades";
 import { origens as dadosPlanilhaOrigens } from "./origens";
@@ -51,19 +50,30 @@ import {
   RecursoField,
   TraumaField,
 } from "./ui-components";
-
 // Import do contexto
 import { useFicha } from "./FichaContext";
 
-function formatarDataPtBr(isoString) {
-  if (!isoString) return "";
-  const data = new Date(isoString);
+function anexarEntradaComData(historicoAnterior, textoNovo) {
+  const textoLimpo = (textoNovo ?? "").trim();
 
-  return data.toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  // Se não escreveu nada, não altera o histórico
+  if (!textoLimpo) return historicoAnterior ?? "";
+
+  const carimbo =   ();
+  const entrada = `${carimbo}: ${textoLimpo}\n\n`;
+
+  return `${historicoAnterior ?? ""}${entrada}`;
 }
+function normalizarAnotacaoComoString(valor) {
+  if (!valor) return "";
+  if (typeof valor === "string") return valor;
+
+  // Se ainda sobrou dado antigo no formato objeto, tenta aproveitar
+  if (typeof valor === "object" && valor.texto) return valor.texto;
+
+  return "";
+}
+
 const FichaCJphant = () => {
   // Usar o contexto em vez de props
   const { state, actions } = useFicha();
@@ -95,35 +105,31 @@ const FichaCJphant = () => {
   // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
   const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
 
+  // Estados para Anotações
+  const [historico, setHistorico] = useState("");
+  const [novaEntrada, setNovaEntrada] = useState("");  
+
   function abrirAnotacoes(secaoId) {
+     //console.log("ABRINDO", secaoId, state.anotacoes?.[secaoId])
     const textoSalvoDaSecao = state.anotacoes?.[secaoId] ?? "";
     setSecaoIdAtiva(secaoId);
     setIsAnotacoesOpen(true);
   }
 
   // Fecha o modal e limpa a seção ativa (boa prática)
-  function handleSalvarAnotacoes(secaoId, textoFinal) {
-    actions.updateAnotacoes({
-      [secaoId]: {
-        texto: textoFinal,
-        atualizadoEm: new Date().toISOString(),
-      },
-    });
+  function handleSalvarAnotacoes(secaoId, historicoCompleto) {
+    actions.updateAnotacoes({ [secaoId]: historicoCompleto });
+    //console.log("SALVANDO", secaoId, historicoCompleto);
   }
 
-  function normalizarAnotacao(valor) {
-    if (!valor) return { textoInicial: "", atualizadoEm: null };
+  function formatarDataPtBr(isoString) {
+    if (!isoString) return "";
+    const agora = new Date(isoString);
 
-    // formato antigo (string)
-    if (typeof valor === "string") {
-      return { textoInicial: valor, atualizadoEm: null };
-    }
-
-    // formato novo (objeto)
-    return {
-      textoInicial: valor.textoInicial ?? "",
-      atualizadoEm: valor.atualizadoEm ?? null,
-    };
+    return agora.toLocaleString("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
   }
 
   function handleFecharModal() {
@@ -138,7 +144,7 @@ const FichaCJphant = () => {
         {secaoId && (
           <button
             type="button"
-            className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+            className="rounded-lg px-3 py-1 text-sm text-gray-800 font-bold hover:bg-gray-100"
             onClick={() => abrirAnotacoes(secaoId)}
           >
             Anotações
@@ -146,6 +152,7 @@ const FichaCJphant = () => {
         )}
       </div>
     );
+
   };
   // Estados locais (que não precisam ser persistidos entre navegações)
   const [pontosUsados, setPontosUsados] = useState(7);
@@ -283,13 +290,13 @@ const FichaCJphant = () => {
 
   // Processar dados da planilha de Ancestralidades - MODIFICADO COM DEBUG
   useEffect(() => {
-  /*     console.log("=== DEBUG ANCESTRALIDADES ===");
+  /* console.log("=== DEBUG ANCESTRALIDADES ===");
     console.log("Dados brutos da planilha:", dadosPlanilhaAncestralidades); */
 
     // Agrupar por ancestralidade
     const agrupado = {};
     dadosPlanilhaAncestralidades.forEach((item) => {
-  /*       console.log(
+  /* console.log(
         `Processando: ${item.Ancestralidade} - ${item.Nome} - Custo: ${item.Custo}`
       ); */
 
@@ -831,9 +838,8 @@ const FichaCJphant = () => {
     actions.updateRecursos(novosRecursos);
   };
 
-  const anotacaoNormalizada = normalizarAnotacao(
-    state.anotacoes?.[secaoIdAtiva]
-  );
+  const historicoDaSecao =
+    normalizarAnotacaoComoString(state.anotacoes?.[secaoIdAtiva]);
   
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -844,12 +850,13 @@ const FichaCJphant = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               Ficha de Personagem - Phantasia
             </h1>
+            
               <ModalAnotacoes
                 isOpen={isAnotacoesOpen}
                 secaoId={secaoIdAtiva}
                 tituloSecao={secaoIdAtiva}
-                textoInicial={anotacaoNormalizada.texto}
-                atualizadoEm={formatarDataPtBr(anotacaoNormalizada.atualizadoEm)}
+                textoInicial={historicoDaSecao}
+                atualizadoEm={formatarDataPtBr(historicoDaSecao.atualizadoEm)}
                 onSave={handleSalvarAnotacoes}
                 onClose={handleFecharModal}
               />
@@ -2387,24 +2394,35 @@ const ModalAnotacoes = memo(function ModalAnotacoes({
     onSave,
     onClose,
   }) {
-    const [textoRascunho, setTextoRascunho] = useState("");
+  const [textoRascunho, setTextoRascunho] = useState("");
+  const [historico, setHistorico] = useState("");
+  const [novaEntrada, setNovaEntrada] = useState("");
     
     // Sempre que abrir (ou mudar de seção), carrega o texto inicial no rascunho
-    useEffect(() => {
-      if (!isOpen) return;
-      setTextoRascunho(textoInicial ?? "");
-    }, [isOpen, secaoId, textoInicial]);
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setHistorico(textoInicial ?? "");
+    setNovaEntrada("");
+  }, [isOpen, secaoId, textoInicial]);
 
     // Se não estiver aberto, não renderiza nada
     if (!isOpen) return null;
     
-    function handleSalvarEFechar() {
-      // Só tenta salvar se tiver seção selecionada
-      if (!secaoId) return;
-      onSave(secaoId, textoRascunho);
-      onClose();
-    }
-    
+  function handleSalvarEFechar() {
+    if (!secaoId) return;
+
+    const historicoAtualizado = anexarEntradaComData(historico, novaEntrada);
+
+    // Atualiza o histórico exibido na tela também (fica consistente)
+    setHistorico(historicoAtualizado);
+    setNovaEntrada("");
+
+    // Persistência: salva a string histórica inteira
+    onSave(secaoId, historicoAtualizado);
+
+    onClose();
+  }    
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* Overlay fecha */}
@@ -2417,18 +2435,18 @@ const ModalAnotacoes = memo(function ModalAnotacoes({
 
         {/* Card */}
         <div
-          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl"
+          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl text-gray-800"
           onClick={(evento) => evento.stopPropagation()}
         >
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-gray-800">
               Anotações{tituloSecao ? ` — ${tituloSecao}` : ""}
             </h3>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
                 onClick={(evento) => {
                   evento.stopPropagation();
                   onClose();
@@ -2439,7 +2457,7 @@ const ModalAnotacoes = memo(function ModalAnotacoes({
 
               <button
                 type="button"
-                className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
                 onClick={(evento) => {
                   evento.stopPropagation();
                   handleSalvarEFechar();
@@ -2449,17 +2467,21 @@ const ModalAnotacoes = memo(function ModalAnotacoes({
               </button>
             </div>
           </div>
-
           <textarea
-            className="mt-3 w-full min-h-[120px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
-            placeholder="Escreva suas anotações aqui..."
-            value={textoRascunho}
-            onChange={(evento) => setTextoRascunho(evento.target.value)}
+            className="mt-3 w-full min-h-[160px] rounded-xl border border-gray-300 p-3 text-sm outline-none bg-gray-50"
+            value={historico}
+            readOnly
+          />
+          <textarea
+            className="mt-3 w-full min-h-[90px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
+            placeholder="Nova anotação..."
+            value={novaEntrada}
+            onChange={(evento) => setNovaEntrada(evento.target.value)}
             autoFocus
           />
         </div>
       </div>
     );
-  });
+});
 export default FichaCJphant;
 

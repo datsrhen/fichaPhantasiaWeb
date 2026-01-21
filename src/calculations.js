@@ -48,22 +48,19 @@ export const calcularAtributosPermitidos = (
 ) => {
   const permitidos = new Set();
 
-  console.log("=== DEBUG CALCULAR ATRIBUTOS ===");
-  console.log("Ancestralidades ativas recebidas:", ancestralidadesAtivas);
+  //console.log("=== DEBUG CALCULAR ATRIBUTOS ===");
+  //console.log("Ancestralidades ativas recebidas:", ancestralidadesAtivas);
 
   ancestralidadesAtivas.forEach((ancestralidade) => {
     const atributosDaAncestralidade =
       atributosPorAncestralidade[ancestralidade] || [];
-    console.log(
-      `Ancestralidade: ${ancestralidade}, Atributos:`,
-      atributosDaAncestralidade
-    );
+    //console.log(      `Ancestralidade: ${ancestralidade}, Atributos:`,      atributosDaAncestralidade    );
 
     atributosDaAncestralidade.forEach((atributo) => permitidos.add(atributo));
   });
 
-  console.log("Atributos permitidos calculados:", Array.from(permitidos));
-  console.log("=== FIM DEBUG CALCULAR ATRIBUTOS ===");
+  //console.log("Atributos permitidos calculados:", Array.from(permitidos));
+  //console.log("=== FIM DEBUG CALCULAR ATRIBUTOS ===");
 
   return Array.from(permitidos);
 };

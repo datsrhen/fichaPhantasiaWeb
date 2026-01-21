@@ -295,7 +295,7 @@ export const renderCabecalhoSecao = (secaoId) => {
       {secaoId && (
         <button
           type="button"
-          className="rounded-lg px-3 py-1 text-sm font-medium hover:bg-gray-100"
+          className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
           onClick={() => abrirAnotacoes(secaoId)}
         >
           Anotações
@@ -587,13 +587,5 @@ export const HeaderRecursos = ({
   );
 };
 
-export function formatarDataPtBr(isoString) {
-  if (!isoString) return "";
-  const data = new Date(isoString);
 
-  return data.toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-}
 
