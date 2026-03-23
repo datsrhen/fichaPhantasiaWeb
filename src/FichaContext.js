@@ -1,4 +1,4 @@
-// FichaContext.js - ATUALIZADO COM AÇÃO DE MOVIMENTAÇÃO E SUPORTE PARA CAMPO DD
+
 import React, {
   createContext,
   useContext,
@@ -19,6 +19,7 @@ import { initialState } from "./initialState";
 const ACTION_TYPES = {
   UPDATE_DESCRICAO: "UPDATE_DESCRICAO",
   UPDATE_ATRIBUTOS: "UPDATE_ATRIBUTOS",
+  UPDATE_ANOTACOES: "UPDATE_ANOTACOES",
   SET_FICHA_TRANCADA: "SET_FICHA_TRANCADA",
   SET_EDITAR_ITEM: "SET_EDITAR_ITEM",
   SET_ATRIBUTOS_TRANCADOS: "SET_ATRIBUTOS_TRANCADOS",
@@ -46,13 +47,19 @@ const fichaReducer = (state, action) => {
         ...state,
         descricao: { ...state.descricao, ...action.payload },
       };
-
-    case ACTION_TYPES.UPDATE_ATRIBUTOS:
-      return {
-        ...state,
-        atributos: { ...action.payload },
-      };
-
+      
+      case ACTION_TYPES.UPDATE_ATRIBUTOS:
+        return {
+          ...state,
+          atributos: { ...action.payload },
+        };
+        
+        case ACTION_TYPES.UPDATE_ANOTACOES:
+          return {
+            ...state,
+            anotacoes: { ...state.anotacoes, ...action.payload },
+          };
+          
     case ACTION_TYPES.SET_FICHA_TRANCADA:
       return {
         ...state,
@@ -171,6 +178,9 @@ export const FichaProvider = ({ children }) => {
     const updateAtributos = (atributos) =>
       dispatch({ type: ACTION_TYPES.UPDATE_ATRIBUTOS, payload: atributos });
 
+    const updateAnotacoes = (anotacoes) =>
+      dispatch({ type: ACTION_TYPES.UPDATE_ANOTACOES, payload: anotacoes });
+
     const setFichaTrancada = (trancada) =>
       dispatch({ type: ACTION_TYPES.SET_FICHA_TRANCADA, payload: trancada });
 
@@ -263,6 +273,7 @@ export const FichaProvider = ({ children }) => {
     return {
       updateDescricao,
       updateAtributos,
+      updateAnotacoes,
       setEditarItem,
       setFichaTrancada,
       setAtributosTrancados,

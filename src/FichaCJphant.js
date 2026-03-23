@@ -1,5 +1,5 @@
 // FichaCJphant.js - MODIFICADO COM CAMPOS DE RECURSOS SEMPRE EDITÁVEIS
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -12,7 +12,6 @@ import {
   ChevronUp,
   Edit3,
 } from "lucide-react";
-
 // Importando as listas dos arquivos externos
 import { ancestralidades as dadosPlanilhaAncestralidades } from "./ancestralidades";
 import { origens as dadosPlanilhaOrigens } from "./origens";
@@ -51,9 +50,28 @@ import {
   RecursoField,
   TraumaField,
 } from "./ui-components";
-
 // Import do contexto
 import { useFicha } from "./FichaContext";
+
+function anexarEntradaComData(historicoAnterior, textoNovo) {
+  const textoLimpo = (textoNovo ?? "").trim();
+
+  // Se não escreveu nada, não altera o histórico
+  if (!textoLimpo) return historicoAnterior ?? "";
+
+  const carimbo =  formatarDataPtBr(new Date().toISOString()); 
+
+  return `${historicoAnterior ?? ""}${entrada}`;
+}
+function normalizarAnotacaoComoString(valor) {
+  if (!valor) return "";
+  if (typeof valor === "string") return valor;
+
+  // Se ainda sobrou dado antigo no formato objeto, tenta aproveitar
+  if (typeof valor === "object" && valor.texto) return valor.texto;
+
+  return "";
+}
 
 const FichaCJphant = () => {
   // Usar o contexto em vez de props
@@ -77,9 +95,64 @@ const FichaCJphant = () => {
     talentosSelecionados,
     bonusHabilidades,
     recursos,
-    movimentacao, // NOVO: movimentação do contexto
+    movimentacao,
+    anotacoes,
   } = state;
 
+  // Controla se o modal "Anotações" está aberto
+  const [isAnotacoesOpen, setIsAnotacoesOpen] = useState(false);
+  // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
+  const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
+
+  // Estados para Anotações
+  const [historico, setHistorico] = useState("");
+  const [novaEntrada, setNovaEntrada] = useState("");  
+
+  function abrirAnotacoes(secaoId) {
+     //console.log("ABRINDO", secaoId, state.anotacoes?.[secaoId])
+    const textoSalvoDaSecao = state.anotacoes?.[secaoId] ?? "";
+    setSecaoIdAtiva(secaoId);
+    setIsAnotacoesOpen(true);
+  }
+
+  // Fecha o modal e limpa a seção ativa (boa prática)
+  function handleSalvarAnotacoes(secaoId, historicoCompleto) {
+    actions.updateAnotacoes({ [secaoId]: historicoCompleto });
+    //console.log("SALVANDO", secaoId, historicoCompleto);
+  }
+
+  function formatarDataPtBr(isoString) {
+    if (!isoString) return "";
+    const agora = new Date(isoString);
+
+    return agora.toLocaleString("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  }
+
+  function handleFecharModal() {
+    setIsAnotacoesOpen(false);
+    setSecaoIdAtiva(null);
+  }
+
+  const renderCabecalhoSecao = (secaoId) => {
+    
+    return (
+      <div className="flex items-center justify-between gap-2">
+        {secaoId && (
+          <button
+            type="button"
+            className="rounded-lg px-3 py-1 text-sm text-gray-800 font-bold hover:bg-gray-100"
+            onClick={() => abrirAnotacoes(secaoId)}
+          >
+            Anotações
+          </button>
+        )}
+      </div>
+    );
+
+  };
   // Estados locais (que não precisam ser persistidos entre navegações)
   const [pontosUsados, setPontosUsados] = useState(7);
 
@@ -116,7 +189,7 @@ const FichaCJphant = () => {
     pontosAncestralidadeDisponiveis,
     MAX_PONTOS_ANCESTRAL_ATRIBUTOS
   );
-
+  
   // Calcular ancestralidades ativas
   const ancestralidadesAtivas = React.useMemo(
     () => calcularAncestralidadesAtivas(caracteristicasSelecionadas),
@@ -134,11 +207,11 @@ const FichaCJphant = () => {
   );
 
   // DEBUG: Verificar se NÃO-VIVE está funcionando
-  console.log("=== DEBUG ATRIBUTOS PERMITIDOS ===");
+  /*   console.log("=== DEBUG ATRIBUTOS PERMITIDOS ===");
   console.log("Ancestralidades ativas:", ancestralidadesAtivas);
   console.log("Atributos permitidos:", atributosPermitidos);
   console.log("Configuração NÃO-VIVE:", atributosPorAncestralidade["NÃO-VIVE"]);
-  console.log("=== FIM DEBUG ATRIBUTOS PERMITIDOS ===");
+  console.log("=== FIM DEBUG ATRIBUTOS PERMITIDOS ==="); */
 
   // Calcular pontos já distribuídos nos atributos
   const pontosAncestralDistribuidos = Object.values(atributos).reduce(
@@ -181,6 +254,7 @@ const FichaCJphant = () => {
     const total = Object.values(atributos).reduce(
       (acc, val) => acc + val.base,
       0
+    
     );
     setPontosUsados(total);
   }, [atributos]);
@@ -215,15 +289,15 @@ const FichaCJphant = () => {
 
   // Processar dados da planilha de Ancestralidades - MODIFICADO COM DEBUG
   useEffect(() => {
-    console.log("=== DEBUG ANCESTRALIDADES ===");
-    console.log("Dados brutos da planilha:", dadosPlanilhaAncestralidades);
+  /* console.log("=== DEBUG ANCESTRALIDADES ===");
+    console.log("Dados brutos da planilha:", dadosPlanilhaAncestralidades); */
 
     // Agrupar por ancestralidade
     const agrupado = {};
     dadosPlanilhaAncestralidades.forEach((item) => {
-      console.log(
+  /* console.log(
         `Processando: ${item.Ancestralidade} - ${item.Nome} - Custo: ${item.Custo}`
-      );
+      ); */
 
       if (!agrupado[item.Ancestralidade]) {
         agrupado[item.Ancestralidade] = [];
@@ -236,15 +310,15 @@ const FichaCJphant = () => {
       });
     });
 
-    console.log("Ancestralidades agrupadas:", agrupado);
-    console.log("Chaves das ancestralidades:", Object.keys(agrupado));
+  /*     console.log("Ancestralidades agrupadas:", agrupado);
+    console.log("Chaves das ancestralidades:", Object.keys(agrupado)); */
 
     const dadosProcessados = Object.keys(agrupado).map((nome) => ({
       nome,
       caracteristicas: agrupado[nome],
     }));
 
-    console.log("Dados processados:", dadosProcessados);
+  /*     console.log("Dados processados:", dadosProcessados); */
     setAncestralidades(dadosProcessados);
 
     const abertasInicial = {};
@@ -252,7 +326,7 @@ const FichaCJphant = () => {
       abertasInicial[anc.nome] = false;
     });
     setAncestralidadesAbertas(abertasInicial);
-    console.log("=== FIM DEBUG ANCESTRALIDADES ===");
+  /*     console.log("=== FIM DEBUG ANCESTRALIDADES ==="); */
   }, []);
 
   // Processar dados da planilha de Origens
@@ -573,25 +647,25 @@ const FichaCJphant = () => {
   const toggleCaracteristica = (caracteristicaId) => {
     if (ancestralidadesConfirmadas) return;
 
-    console.log("=== DEBUG TOGGLE CARACTERÍSTICA ===");
-    console.log("Tentando alternar característica:", caracteristicaId);
+/*     console.log("=== DEBUG TOGGLE CARACTERÍSTICA ===");
+    console.log("Tentando alternar característica:", caracteristicaId); */
 
     // CORREÇÃO: Encontrar o último hífen para separar corretamente
     const lastHyphenIndex = caracteristicaId.lastIndexOf("-");
     const ancestralidadeNome = caracteristicaId.substring(0, lastHyphenIndex);
     const caracteristicaNome = caracteristicaId.substring(lastHyphenIndex + 1);
 
-    console.log("Ancestralidade extraída:", ancestralidadeNome);
-    console.log("Característica extraída:", caracteristicaNome);
+/*     console.log("Ancestralidade extraída:", ancestralidadeNome);
+    console.log("Característica extraída:", caracteristicaNome); */
 
     const ancestralidade = ancestralidades.find(
       (a) => a.nome === ancestralidadeNome
     );
 
-    console.log("Ancestralidade encontrada:", ancestralidade);
+/*     console.log("Ancestralidade encontrada:", ancestralidade); */
 
     if (!ancestralidade) {
-      console.log("Ancestralidade NÃO encontrada!");
+/*       console.log("Ancestralidade NÃO encontrada!"); */
       return;
     }
 
@@ -599,10 +673,10 @@ const FichaCJphant = () => {
       (c) => c.nome === caracteristicaNome
     );
 
-    console.log("Característica encontrada:", caracteristica);
+/*     console.log("Característica encontrada:", caracteristica); */
 
     if (!caracteristica) {
-      console.log("Característica NÃO encontrada!");
+/*       console.log("Característica NÃO encontrada!"); */
       return;
     }
 
@@ -610,12 +684,12 @@ const FichaCJphant = () => {
       ? pontosAncestralidadeUsados - caracteristica.custo
       : pontosAncestralidadeUsados + caracteristica.custo;
 
-    console.log("Custo atual:", pontosAncestralidadeUsados);
-    console.log("Novo custo:", novoCusto);
+/*     console.log("Custo atual:", pontosAncestralidadeUsados);
+    console.log("Novo custo:", novoCusto); */
 
     // Verificar se excede os pontos disponíveis
     if (novoCusto > PONTOS_ANCESTRALIDADE) {
-      console.log("Excede pontos disponíveis");
+/*       console.log("Excede pontos disponíveis"); */
       return;
     }
 
@@ -624,8 +698,8 @@ const FichaCJphant = () => {
       [caracteristicaId]: !caracteristicasSelecionadas[caracteristicaId],
     };
 
-    console.log("Novas características:", novasCaracteristicas);
-    console.log("=== FIM DEBUG TOGGLE CARACTERÍSTICA ===");
+/*     console.log("Novas características:", novasCaracteristicas);
+    console.log("=== FIM DEBUG TOGGLE CARACTERÍSTICA ==="); */
 
     actions.updateAncestralidades({
       caracteristicasSelecionadas: novasCaracteristicas,
@@ -660,6 +734,7 @@ const FichaCJphant = () => {
       distribuicaoAtributoAncestralidadeConfirmada: true,
     });
   };
+
 
   // Funções para Origens
   const toggleOrigem = (tipo) => {
@@ -717,6 +792,8 @@ const FichaCJphant = () => {
     actions.updateOrigens({ origensConfirmadas: true });
   };
 
+
+
   // Funções para Talentos - MODIFICADAS para nova estratégia
   const toggleTalentos = (tipo) => {
     if (fichaTrancada) return; // Não permite abrir/fechar quando ficha está trancada
@@ -734,6 +811,8 @@ const FichaCJphant = () => {
     };
     actions.updateTalentos(novosTalentos);
   };
+
+
 
   // Função auxiliar para renderizar campo condicional
   const renderCampo = (rotulo, valor) => {
@@ -758,6 +837,9 @@ const FichaCJphant = () => {
     actions.updateRecursos(novosRecursos);
   };
 
+  const historicoDaSecao =
+    normalizarAnotacaoComoString(state.anotacoes?.[secaoIdAtiva]);
+  
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -767,12 +849,21 @@ const FichaCJphant = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               Ficha de Personagem - Phantasia
             </h1>
+            
+              <ModalAnotacoes
+                isOpen={isAnotacoesOpen}
+                secaoId={secaoIdAtiva}
+                tituloSecao={secaoIdAtiva}
+                textoInicial={historicoDaSecao}
+                atualizadoEm={formatarDataPtBr(historicoDaSecao.atualizadoEm)}
+                onSave={handleSalvarAnotacoes}
+                onClose={handleFecharModal}
+              />
             <LockToggleButton
               isLocked={fichaTrancada}
               onToggle={alternarTrancaFicha}
             />
           </div>
-
           {/* CAMPOS DE DESCRIÇÃO - MODIFICADO COM NOVO LAYOUT DE RECURSOS */}
           <div className="mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
             {/* Coluna 1-2: Nome e Idade lado a lado + Convicção e Vício */}
@@ -1108,8 +1199,11 @@ const FichaCJphant = () => {
           <div className="flex flex-col gap-6">
             {/* Seção de Atributos - Mantém largura estreita */}
             <div className="w-80 bg-white rounded-lg shadow-lg p-4">
-              <SectionHeader title="Atributos" />
-
+              <SectionHeader title="Atributos">
+                {renderCabecalhoSecao("atributos")}
+              </SectionHeader>
+                      
+              {/* Seção de Pontos Restantes */}
               {!atributosTrancados && (
                 <StatusPanel
                   icon={pontosRestantes === 0 ? CheckCircle2 : AlertCircle}
@@ -1666,7 +1760,9 @@ const FichaCJphant = () => {
                       )}/3)`
                     : ""
                 }
-              />
+              >
+                {renderCabecalhoSecao("origens")}
+              </SectionHeader>
 
               {!origensConfirmadas && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -2066,6 +2162,7 @@ const FichaCJphant = () => {
                               </div>
                             ) : (
                               <select
+                
                                 value={hab.atributo2}
                                 onChange={(e) =>
                                   atualizarHabilidade(
@@ -2134,7 +2231,8 @@ const FichaCJphant = () => {
             <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col">
               <SectionHeader title="Talentos" action={false}>
                 <ModeIndicator isLocked={fichaTrancada} />
-              </SectionHeader>
+                {renderCabecalhoSecao("talentos")}
+                </SectionHeader>
 
               {/* Área de rolagem para os talentos - MODIFICAÇÃO: max-height condicional */}
               <div
@@ -2286,6 +2384,103 @@ const FichaCJphant = () => {
       </div>
     </div>
   );
-};
+}
+const ModalAnotacoes = memo(function ModalAnotacoes({
+    isOpen,
+    secaoId,
+    tituloSecao,
+    textoInicial,
+    onSave,
+    onClose,
+  }) {
+  const [textoRascunho, setTextoRascunho] = useState("");
+  const [historico, setHistorico] = useState("");
+  const [novaEntrada, setNovaEntrada] = useState("");
+    
+    // Sempre que abrir (ou mudar de seção), carrega o texto inicial no rascunho
+  useEffect(() => {
+    if (!isOpen) return;
 
+    setHistorico(textoInicial ?? "");
+    setNovaEntrada("");
+  }, [isOpen, secaoId, textoInicial]);
+
+    // Se não estiver aberto, não renderiza nada
+    if (!isOpen) return null;
+    
+  function handleSalvarEFechar() {
+    if (!secaoId) return;
+
+    const historicoAtualizado = anexarEntradaComData(historico, novaEntrada);
+
+    // Atualiza o histórico exibido na tela também (fica consistente)
+    setHistorico(historicoAtualizado);
+    setNovaEntrada("");
+
+    // Persistência: salva a string histórica inteira
+    onSave(secaoId, historicoAtualizado);
+
+    onClose();
+  }    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        {/* Overlay fecha */}
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/50"
+          onClick={onClose}
+          aria-label="Fechar anotações"
+        />
+
+        {/* Card */}
+        <div
+          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl text-gray-800"
+          onClick={(evento) => evento.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Anotações{tituloSecao ? ` — ${tituloSecao}` : ""}
+            </h3>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
+                onClick={(evento) => {
+                  evento.stopPropagation();
+                  onClose();
+                }}
+              >
+                Fechar
+              </button>
+
+              <button
+                type="button"
+                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
+                onClick={(evento) => {
+                  evento.stopPropagation();
+                  handleSalvarEFechar();
+                }}
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+          <textarea
+            className="mt-3 w-full min-h-[160px] rounded-xl border border-gray-300 p-3 text-sm outline-none bg-gray-50"
+            value={historico}
+            readOnly
+          />
+          <textarea
+            className="mt-3 w-full min-h-[90px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
+            placeholder="Nova anotação..."
+            value={novaEntrada}
+            onChange={(evento) => setNovaEntrada(evento.target.value)}
+            autoFocus
+          />
+        </div>
+      </div>
+    );
+});
 export default FichaCJphant;
+

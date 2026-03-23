@@ -1,6 +1,7 @@
 // bagagem.js - MODIFICADO COM TRAUMAS AJUSTADO NO CABEÇALHO
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, X, Sword } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 // Importando dados das planilhas
 import { armas as dadosArmas } from "./armas";
@@ -22,6 +23,8 @@ import {
   LockToggleButton,
   HeaderRecursos,
   ToggleEditarItem,
+  StatusPanel,
+  BonusInput,
 } from "./ui-components";
 
 // Import do contexto
@@ -60,8 +63,23 @@ const Bagagem = () => {
     (item) => !itensEquipados.some((equipado) => equipado.id === item.id)
   );
 
-  const espacosDisponiveis = calcularEspacos();
+  const espacosBase = calcularEspacos();
+  const bonusEspacos = recursos.bonusEspacos ?? 0;
+  const espacosDisponiveis = espacosBase + bonusEspacos;
+
   const espacosUsados = itensOcupandoEspaco.length;
+
+  // Func dos botões +/- para bônus de espaços
+
+  const incrementarBonusEspacos = () => {
+    const bonusAtual = recursos.bonusEspacos ?? 0;
+    atualizarRecursos({ bonusEspacos: bonusAtual + 1 });
+  };
+
+  const decrementarBonusEspacos = () => {
+    const bonusAtual = recursos.bonusEspacos ?? 0;
+    atualizarRecursos({ bonusEspacos: Math.max(0, bonusAtual - 1) });
+  };
 
   // Processar dados de todas as categorias para autocompletar
   useEffect(() => {
@@ -125,7 +143,7 @@ const Bagagem = () => {
 
   // Adicionar novo item vazio
   const adicionarItem = () => {
-    if (espacosUsados >= espacosDisponiveis) return;
+    // if (espacosUsados >= espacosDisponiveis) return;
 
     const novoItem = {
       id: Date.now(),
@@ -574,24 +592,28 @@ const Bagagem = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Equipamentos e Bagagem
               </h1>
-              <div className="text-sm text-gray-600">
-                Espaços usados: {espacosUsados}/{espacosDisponiveis}
-                {itensEquipados.length > 0 && (
-                  <span className="text-green-600 ml-2">
-                    (+{itensEquipados.length} equipado(s))
-                  </span>
-                )}
-                <br />
-                (INT:{" "}
-                {atributos.INT.base +
-                  atributos.INT.ancestral +
-                  atributos.INT.bonus}{" "}
-                + RES:{" "}
-                {atributos.RES.base +
-                  atributos.RES.ancestral +
-                  atributos.RES.bonus}{" "}
-                × 4)
-              </div>
+
+              <StatusPanel
+                className="flex px-4 items-center"
+                icon={
+                  espacosDisponiveis < espacosUsados
+                    ? AlertCircle
+                    : CheckCircle2
+                }
+                iconColor={espacosDisponiveis < espacosUsados ? "red" : "blue"}
+                title="Capacidade:"
+                value={`${espacosUsados}/${espacosDisponiveis}`}
+                valueColor={espacosDisponiveis < espacosUsados ? "red" : "blue"}
+              >
+                <BonusInput
+                  value={bonusEspacos}
+                  onIncrement={incrementarBonusEspacos}
+                  onDecrement={decrementarBonusEspacos}
+                  onChange={(e) =>
+                    atualizarRecursos({ bonusEspacos: e.target.value })
+                  }
+                />
+              </StatusPanel>
             </div>
 
             {/* NOVO: Recursos E TRAUMAS AJUSTADO no cabeçalho */}
@@ -644,13 +666,15 @@ const Bagagem = () => {
           {/* Coluna da Bagagem - 60% da largura */}
           <div className="flex-1 lg:flex-[3]">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              {/* MODIFICADO: action SEMPRE true agora */}
-              <SectionHeader
-                title="Bagagem"
-                action={true}
-                actionText="Adicionar Item"
-                onAction={adicionarItem}
-              />
+              <div className="flex-1 gap-2 mb-4">
+                {/* Esquerda: título Bagagem */}
+                <SectionHeader
+                  title="Bagagem"
+                  action={true}
+                  actionText="Adicionar Item"
+                  onAction={adicionarItem}
+                />
+              </div>
 
               {/* Lista de Itens */}
               <div className="space-y-4">
