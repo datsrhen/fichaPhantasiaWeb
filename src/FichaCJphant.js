@@ -59,8 +59,7 @@ function anexarEntradaComData(historicoAnterior, textoNovo) {
   // Se não escreveu nada, não altera o histórico
   if (!textoLimpo) return historicoAnterior ?? "";
 
-  const carimbo =   ();
-  const entrada = `${carimbo}: ${textoLimpo}\n\n`;
+  const carimbo =  formatarDataPtBr(new Date().toISOString()); 
 
   return `${historicoAnterior ?? ""}${entrada}`;
 }
