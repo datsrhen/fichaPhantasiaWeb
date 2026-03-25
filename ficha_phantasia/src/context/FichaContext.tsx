@@ -26,7 +26,6 @@ const ACTION_TYPES = {
   UPDATE_ANCESTRALIDADES: "UPDATE_ANCESTRALIDADES",
   UPDATE_ORIGENS: "UPDATE_ORIGENS",
   UPDATE_HABILIDADES: "UPDATE_HABILIDADES",
-  UPDATE_BONUS_HABILIDADES: "UPDATE_BONUS_HABILIDADES",
   UPDATE_TALENTOS: "UPDATE_TALENTOS",
   UPDATE_BAGAGEM: "UPDATE_BAGAGEM",
   UPDATE_MANOBRAS: "UPDATE_MANOBRAS",
@@ -41,6 +40,11 @@ const ACTION_TYPES = {
 
 // Reducer
 const fichaReducer = (state, action) => {
+  if (!action || !action.type) {
+    console.error("[fichaReducer] action inválida recebida:", action);
+    return state;
+  }
+
   switch (action.type) {
     case ACTION_TYPES.UPDATE_DESCRICAO:
       return {
@@ -94,12 +98,6 @@ const fichaReducer = (state, action) => {
       return {
         ...state,
         habilidades: action.payload,
-      };
-
-    case ACTION_TYPES.UPDATE_BONUS_HABILIDADES:
-      return {
-        ...state,
-        bonusHabilidades: action.payload,
       };
 
     case ACTION_TYPES.UPDATE_TALENTOS:
@@ -208,12 +206,6 @@ export const FichaProvider = ({ children }) => {
         payload: habilidades,
       });
 
-    const updateBonusHabilidades = (bonus) =>
-      dispatch({
-        type: ACTION_TYPES.UPDATE_BONUS_HABILIDADES,
-        payload: bonus,
-      });
-
     const updateTalentos = (talentos) =>
       dispatch({ type: ACTION_TYPES.UPDATE_TALENTOS, payload: talentos });
 
@@ -280,7 +272,6 @@ export const FichaProvider = ({ children }) => {
       updateAncestralidades,
       updateOrigens,
       updateHabilidades,
-      updateBonusHabilidades,
       updateTalentos,
       updateBagagem,
       updateManobras,
