@@ -62,7 +62,6 @@ export const initialState = {
 
   // Dados de Habilidades
   habilidades: [],
-  bonusHabilidades: {},
 
   // Dados de Talentos
   talentosSelecionados: {},

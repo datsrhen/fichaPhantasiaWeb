@@ -82,7 +82,20 @@ export const calcularBonusHabilidade = (
   atributos,
   pontosAtributoAncestralidade
 ) => {
+  if (!habilidade || !atributos || !pontosAtributoAncestralidade) {
+    console.warn("[calcularBonusHabilidade] argumentos inválidos", {
+      habilidade,
+      atributos,
+      pontosAtributoAncestralidade,
+    });
+    return 0;
+  }
+
   const getTotal = (attr) => {
+    if (!attr || !atributos[attr]) {
+      console.warn("[calcularBonusHabilidade] atributo inexistente:", attr);
+      return 0;
+    }
     const base = atributos[attr].base || 0;
     const ancestral = atributos[attr].ancestral || 0;
     const pontosAncestralidade = pontosAtributoAncestralidade[attr] || 0;
@@ -90,9 +103,14 @@ export const calcularBonusHabilidade = (
     return base + ancestral + pontosAncestralidade + bonus;
   };
 
-  const valor1 = getTotal(habilidade.atributo1) || 0;
-  const valor2 = getTotal(habilidade.atributo2) || 0;
-  return valor1 + valor2;
+  try {
+    const valor1 = getTotal(habilidade.atributo1) || 0;
+    const valor2 = getTotal(habilidade.atributo2) || 0;
+    return valor1 + valor2;
+  } catch (err) {
+    console.error("[calcularBonusHabilidade] erro no cálculo:", err, habilidade);
+    return 0;
+  }
 };
 
 // Calcular total de origens selecionadas
