@@ -1,6 +1,6 @@
-// magias.js - MODIFICADO COM RECURSOS E TRAUMAS NO CABEÇALHO
+// magias.js
 import React, { useState, useRef, useEffect } from "react";
-import { useFicha } from "../context/FichaContext";
+import { useFicha } from "../context/useFicha";
 import { LockToggleButton, HeaderRecursos } from "./ui-components"; // NOVO: HeaderRecursos importado
 import { talentos as dadosTalento } from "../data/talentos";
 import { nivelMaestria } from "../util/constants";

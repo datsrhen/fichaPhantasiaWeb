@@ -253,7 +253,7 @@ const fichaReducer = (state, action) => {
 };
 
 // Criar contexto
-const FichaContext = createContext();
+export const FichaContext = createContext();
 
 // Provider
 export const FichaProvider = ({ children }) => {
@@ -431,11 +431,5 @@ export const FichaProvider = ({ children }) => {
   );
 };
 
-// Hook personalizado
-export const useFicha = () => {
-  const context = useContext(FichaContext);
-  if (!context) {
-    throw new Error("useFicha deve ser usado dentro de um FichaProvider");
-  }
-  return context;
-};
+// Hook em arquivo separado: ./useFicha.js
+// Separação necessária para compatibilidade com Vite HMR.

@@ -7,10 +7,11 @@ import { Package, Download, Upload, Plus } from "lucide-react";
 import FichaCJphant from "../FichaCJphant";
 import Equipamentos from "./equipamentos";
 import Magias from "./magias";
-import Criacao from "../util/criacao";
+import Criacao from "./criacao";
 
 // Import do contexto
-import { FichaProvider, useFicha } from "../context/FichaContext";
+import { FichaProvider } from "../context/FichaContext";
+import { useFicha } from "../context/useFicha";
 
 // Componente separado para usar o hook useFicha
 const AppContent = () => {

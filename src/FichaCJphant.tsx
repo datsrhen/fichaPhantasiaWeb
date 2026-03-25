@@ -57,7 +57,7 @@ import {
   TraumaField,
 } from "./components/ui-components";
 // Import do contexto
-import { useFicha } from "./context/FichaContext";
+import { useFicha } from "./context/useFicha";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {

@@ -1,4 +1,4 @@
-// bagagem.js - MODIFICADO COM TRAUMAS AJUSTADO NO CABEÇALHO
+// bagagem.js
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, X, Sword } from "lucide-react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -28,7 +28,7 @@ import {
 } from "./ui-components";
 
 // Import do contexto
-import { useFicha } from "../context/FichaContext";
+import { useFicha } from "../context/useFicha";
 
 const Bagagem = () => {
   // Usar o contexto em vez de props

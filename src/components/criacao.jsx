@@ -1,8 +1,9 @@
 // criacao.js - MODIFICADO COM TRAUMAS NO CABEÇALHO
 import React, { useMemo, useState, useRef } from "react";
-import { useFicha } from "../context/FichaContext";
+import { useFicha } from "../context/useFicha";
 import { talentos as dadosTalento } from "../data/talentos";
-import { nivelMaestria } from "./constants";
+import { nivelMaestria } from "../util/constants";
+import { calcularBonusHabilidade } from "../util/calculations";
 import {
   LockToggleButton,
   SectionHeader,
@@ -17,7 +18,6 @@ const Criacao = () => {
       fichaTrancada,
       talentosSelecionados,
       habilidades,
-      bonusHabilidades,
       tiposCriacao,
       negocios,
       receitas,
@@ -27,6 +27,21 @@ const Criacao = () => {
     },
     actions,
   } = useFicha();
+
+  // bonusHabilidades removido do state — calculado localmente como derivado
+  const bonusHabilidades = useMemo(() => {
+    const resultado = {};
+    if (!Array.isArray(habilidades)) return resultado;
+    habilidades.forEach((hab) => {
+      if (!hab?.trancada) return;
+      resultado[hab.id] = calcularBonusHabilidade(
+        hab,
+        atributos,
+        pontosAtributoAncestralidade
+      );
+    });
+    return resultado;
+  }, [habilidades, atributos, pontosAtributoAncestralidade]);
 
   // Estado local apenas para o formulário de nova receita
   const [novaReceita, setNovaReceita] = useState({
