@@ -83,15 +83,51 @@ const fichaReducer = (state, action) => {
       };
 
     case ACTION_TYPES.UPDATE_ANCESTRALIDADES:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] UPDATE_ANCESTRALIDADES payload inválido:", action.payload);
+        return state;
+      }
       return {
         ...state,
-        ...action.payload,
+        ...(action.payload.caracteristicasSelecionadas !== undefined && {
+          caracteristicasSelecionadas: action.payload.caracteristicasSelecionadas,
+        }),
+        ...(action.payload.caracteristicasConfirmadas !== undefined && {
+          caracteristicasConfirmadas: action.payload.caracteristicasConfirmadas,
+        }),
+        ...(action.payload.ancestralidadesConfirmadas !== undefined && {
+          ancestralidadesConfirmadas: action.payload.ancestralidadesConfirmadas,
+        }),
+        ...(action.payload.pontosAtributoAncestralidade !== undefined && {
+          pontosAtributoAncestralidade: action.payload.pontosAtributoAncestralidade,
+        }),
+        ...(action.payload.distribuicaoAncestralConfirmada !== undefined && {
+          distribuicaoAncestralConfirmada: action.payload.distribuicaoAncestralConfirmada,
+        }),
+        ...(action.payload.distribuicaoAtributoAncestralidadeConfirmada !== undefined && {
+          distribuicaoAtributoAncestralidadeConfirmada: action.payload.distribuicaoAtributoAncestralidadeConfirmada,
+        }),
       };
 
     case ACTION_TYPES.UPDATE_ORIGENS:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] UPDATE_ORIGENS payload inválido:", action.payload);
+        return state;
+      }
       return {
         ...state,
-        ...action.payload,
+        ...(action.payload.origensSelecionadas !== undefined && {
+          origensSelecionadas: action.payload.origensSelecionadas,
+        }),
+        ...(action.payload.origensConfirmadas !== undefined && {
+          origensConfirmadas: action.payload.origensConfirmadas,
+        }),
+        ...(action.payload.andrilhagemSelecionada !== undefined && {
+          andrilhagemSelecionada: action.payload.andrilhagemSelecionada,
+        }),
+        ...(action.payload.magiaDespertaSelecionada !== undefined && {
+          magiaDespertaSelecionada: action.payload.magiaDespertaSelecionada,
+        }),
       };
 
     case ACTION_TYPES.UPDATE_HABILIDADES:
@@ -107,9 +143,18 @@ const fichaReducer = (state, action) => {
       };
 
     case ACTION_TYPES.UPDATE_BAGAGEM:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] UPDATE_BAGAGEM payload inválido:", action.payload);
+        return state;
+      }
       return {
         ...state,
-        ...action.payload,
+        ...(action.payload.itensBagagem !== undefined && {
+          itensBagagem: action.payload.itensBagagem,
+        }),
+        ...(action.payload.itensEquipados !== undefined && {
+          itensEquipados: action.payload.itensEquipados,
+        }),
       };
 
     case ACTION_TYPES.UPDATE_MANOBRAS:
@@ -119,9 +164,36 @@ const fichaReducer = (state, action) => {
       };
 
     case ACTION_TYPES.UPDATE_MAGIAS:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] UPDATE_MAGIAS payload inválido:", action.payload);
+        return state;
+      }
       return {
         ...state,
-        ...action.payload,
+        ...(action.payload.atosEspirituais !== undefined && {
+          atosEspirituais: action.payload.atosEspirituais,
+        }),
+        ...(action.payload.subtiposArcana !== undefined && {
+          subtiposArcana: action.payload.subtiposArcana,
+        }),
+        ...(action.payload.feitosAtuais !== undefined && {
+          feitosAtuais: action.payload.feitosAtuais,
+        }),
+        ...(action.payload.circsAutAtuais !== undefined && {
+          circsAutAtuais: action.payload.circsAutAtuais,
+        }),
+        ...(action.payload.magiasAlteracaoSelecionadas !== undefined && {
+          magiasAlteracaoSelecionadas: action.payload.magiasAlteracaoSelecionadas,
+        }),
+        ...(action.payload.formasSelecionadas !== undefined && {
+          formasSelecionadas: action.payload.formasSelecionadas,
+        }),
+        ...(action.payload.efeitosArcana !== undefined && {
+          efeitosArcana: action.payload.efeitosArcana,
+        }),
+        ...(action.payload.registrosArcana !== undefined && {
+          registrosArcana: action.payload.registrosArcana,
+        }),
       };
 
     case ACTION_TYPES.UPDATE_REGISTROS_ARCANA:
@@ -131,9 +203,21 @@ const fichaReducer = (state, action) => {
       };
 
     case ACTION_TYPES.UPDATE_CRIACAO:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] UPDATE_CRIACAO payload inválido:", action.payload);
+        return state;
+      }
       return {
         ...state,
-        ...action.payload,
+        ...(action.payload.tiposCriacao !== undefined && {
+          tiposCriacao: action.payload.tiposCriacao,
+        }),
+        ...(action.payload.negocios !== undefined && {
+          negocios: action.payload.negocios,
+        }),
+        ...(action.payload.receitas !== undefined && {
+          receitas: action.payload.receitas,
+        }),
       };
 
     case ACTION_TYPES.UPDATE_RECURSOS:
@@ -149,7 +233,14 @@ const fichaReducer = (state, action) => {
       };
 
     case ACTION_TYPES.LOAD_FICHA:
+      if (!action.payload || typeof action.payload !== "object") {
+        console.error("[fichaReducer] LOAD_FICHA payload inválido:", action.payload);
+        return state;
+      }
+      // Merge com initialState garante que campos ausentes em fichas antigas
+      // não cheguem como undefined nos componentes
       return {
+        ...initialState,
         ...action.payload,
       };
 

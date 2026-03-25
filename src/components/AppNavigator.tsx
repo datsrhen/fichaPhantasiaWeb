@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { Package, Download, Upload, Plus } from "lucide-react";
 
 // Import das páginas
-import FichaCJphant from "../../FichaCJphant";
+import FichaCJphant from "../FichaCJphant";
 import Equipamentos from "./equipamentos";
 import Magias from "./magias";
 import Criacao from "../util/criacao";

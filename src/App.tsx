@@ -1,5 +1,5 @@
 import { FichaProvider } from "./context/FichaContext";
-import FichaCJphant from "../FichaCJphant";
+import FichaCJphant from "./FichaCJphant";
 import AppNavigator from "./components/AppNavigator";
 
 function App() {
