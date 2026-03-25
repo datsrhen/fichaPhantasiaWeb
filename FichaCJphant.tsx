@@ -21,7 +21,7 @@ import {
   ancestralidadesAbertasInicial,
   origensAbertasInicial,
   talentosAbertosInicial,
-} from "./util/staticData";
+} from "./src/util/staticData";
 import {
   PONTOS_DISPONIVEIS,
   VALOR_MINIMO,
@@ -30,7 +30,7 @@ import {
   nomeCompleto,
   nivelMaestria,
   atributosPorAncestralidade,
-} from "./util/constants";
+} from "./src/util/constants";
 import {
   calcularCustoTotal,
   calcularAncestralidadesAtivas,
@@ -40,7 +40,7 @@ import {
   calcularTotalOrigensSelecionadas,
   obterCaracteristicasAgrupadas,
   obterOrigensSelecionadas,
-} from "./util/calculations";
+} from "./src/util/calculations";
 import {
   IncrementDecrementButton,
   ConfirmButton,
@@ -55,10 +55,10 @@ import {
   LockToggleButton,
   RecursoField,
   TraumaField,
-} from "./components/ui-components";
+} from "./src/components/ui-components";
 // Import do contexto
-import { useFicha } from "./context/FichaContext";
-import { useDebouncedField } from "./util/useDebounce";
+import { useFicha } from "./src/context/FichaContext";
+import { useDebouncedField } from "./src/util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
   const textoLimpo = (textoNovo ?? "").trim();
