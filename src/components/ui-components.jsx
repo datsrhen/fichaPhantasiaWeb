@@ -135,11 +135,13 @@ export const IconButton = ({
 };
 
 // Componente de seção com accordion
-export const AccordionSection = ({ title, isOpen, onToggle, children }) => {
+export const AccordionSection = ({ title, toggleId, isOpen, onToggle, children }) => {
+  // toggleId permite que o pai use um único handler estável para todos os accordions
+  const handleClick = toggleId != null ? () => onToggle(toggleId) : onToggle;
   return (
     <div className="border border-gray-200 rounded-lg">
       <button
-        onClick={onToggle}
+        onClick={handleClick}
         className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors rounded-t-lg"
       >
         <span className="font-semibold text-gray-800">{title}</span>
@@ -586,6 +588,3 @@ export const HeaderRecursos = ({
     </div>
   );
 };
-
-
-

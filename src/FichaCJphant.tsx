@@ -477,12 +477,14 @@ const FichaCJphant = () => {
     actions.updateHabilidades(novasHabilidades);
   };
 
-  const removerHabilidade = (id) => {
+  const removerHabilidade = React.useCallback((id) => {
+    if (!id) { console.warn("[removerHabilidade] id inválido:", id); return; }
     const novasHabilidades = habilidades.filter((hab) => hab.id !== id);
     actions.updateHabilidades(novasHabilidades);
-  };
+  }, [habilidades, actions]);
 
-  const atualizarHabilidade = (id, campo, valor) => {
+  const atualizarHabilidade = React.useCallback((id, campo, valor) => {
+    if (!id || !campo) { console.warn("[atualizarHabilidade] argumentos inválidos:", { id, campo }); return; }
     const novasHabilidades = habilidades.map((hab) => {
       if (hab.id === id) {
         if (campo === "maestria" && !fichaTrancada) {
@@ -501,27 +503,25 @@ const FichaCJphant = () => {
       return hab;
     });
     actions.updateHabilidades(novasHabilidades);
-  };
+  }, [habilidades, fichaTrancada, actions]);
 
-  const trancarHabilidade = (id) => {
+  const trancarHabilidade = React.useCallback((id) => {
+    if (!id) { console.warn("[trancarHabilidade] id inválido:", id); return; }
     const novasHabilidades = habilidades.map((hab) =>
       hab.id === id ? { ...hab, trancada: true } : hab
     );
     actions.updateHabilidades(novasHabilidades);
-  };
+  }, [habilidades, actions]);
 
   const alternarTrancaFicha = () => {
     actions.setFichaTrancada(!fichaTrancada);
   };
 
   // Funções para ancestralidades - MODIFICADA COM DEBUG
-  const toggleAncestralidade = (nome) => {
+  const toggleAncestralidade = React.useCallback((nome) => {
     if (ancestralidadesConfirmadas) return;
-    setAncestralidadesAbertas((prev) => ({
-      ...prev,
-      [nome]: !prev[nome],
-    }));
-  };
+    setAncestralidadesAbertas((prev) => ({ ...prev, [nome]: !prev[nome] }));
+  }, [ancestralidadesConfirmadas]);
 
   const toggleCaracteristica = (caracteristicaId) => {
     if (ancestralidadesConfirmadas) return;
@@ -616,13 +616,10 @@ const FichaCJphant = () => {
 
 
   // Funções para Origens
-  const toggleOrigem = (tipo) => {
+  const toggleOrigem = React.useCallback((tipo) => {
     if (origensConfirmadas) return;
-    setOrigensAbertas((prev) => ({
-      ...prev,
-      [tipo]: !prev[tipo],
-    }));
-  };
+    setOrigensAbertas((prev) => ({ ...prev, [tipo]: !prev[tipo] }));
+  }, [origensConfirmadas]);
 
   const toggleOpcaoOrigem = (opcaoId) => {
     if (origensConfirmadas) return;
@@ -674,22 +671,20 @@ const FichaCJphant = () => {
 
 
   // Funções para Talentos - MODIFICADAS para nova estratégia
-  const toggleTalentos = (tipo) => {
-    if (fichaTrancada) return; // Não permite abrir/fechar quando ficha está trancada
-    setTalentosAbertos((prev) => ({
-      ...prev,
-      [tipo]: !prev[tipo],
-    }));
-  };
+  const toggleTalentos = React.useCallback((tipo) => {
+    if (fichaTrancada) return;
+    setTalentosAbertos((prev) => ({ ...prev, [tipo]: !prev[tipo] }));
+  }, [fichaTrancada]);
 
-  const toggleTalento = (talentoId) => {
-    if (fichaTrancada) return; // Não permite alterar quando ficha está trancada
+  const toggleTalento = React.useCallback((talentoId) => {
+    if (!talentoId) { console.warn("[toggleTalento] talentoId inválido:", talentoId); return; }
+    if (fichaTrancada) return;
     const novosTalentos = {
       ...talentosSelecionados,
       [talentoId]: !talentosSelecionados[talentoId],
     };
     actions.updateTalentos(novosTalentos);
-  };
+  }, [fichaTrancada, talentosSelecionados, actions]);
 
 
 
@@ -1511,8 +1506,9 @@ const FichaCJphant = () => {
                     <AccordionSection
                       key={ancestralidade.nome}
                       title={ancestralidade.nome}
+                      toggleId={ancestralidade.nome}
                       isOpen={ancestralidadesAbertas[ancestralidade.nome]}
-                      onToggle={() => toggleAncestralidade(ancestralidade.nome)}
+                      onToggle={toggleAncestralidade}
                     >
                       {ancestralidade.caracteristicas.map((caracteristica) => {
                         const disabled =
@@ -1684,8 +1680,9 @@ const FichaCJphant = () => {
                         <AccordionSection
                           key={origem.tipo}
                           title={origem.tipo}
+                          toggleId={origem.tipo}
                           isOpen={origensAbertas[origem.tipo]}
-                          onToggle={() => toggleOrigem(origem.tipo)}
+                          onToggle={toggleOrigem}
                         >
                           {origem.opcoes.map((opcao) => {
                             const totalSelecionadas =
@@ -2196,8 +2193,9 @@ const FichaCJphant = () => {
                     <AccordionSection
                       key={categoria.tipo}
                       title={categoria.tipo}
+                      toggleId={categoria.tipo}
                       isOpen={talentosAbertos[categoria.tipo]}
-                      onToggle={() => toggleTalentos(categoria.tipo)}
+                      onToggle={toggleTalentos}
                     >
                       {categoria.talentos.map((talento) => (
                         <SelectableCard
