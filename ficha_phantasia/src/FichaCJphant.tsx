@@ -58,6 +58,7 @@ import {
 } from "./components/ui-components";
 // Import do contexto
 import { useFicha } from "./context/FichaContext";
+import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
   const textoLimpo = (textoNovo ?? "").trim();
@@ -701,6 +702,18 @@ const FichaCJphant = () => {
     actions.updateDescricao({ [campo]: valor });
   };
 
+  // Campos longos — estado local com sync debounced (400ms)
+  // Evita dispatch global a cada tecla em textareas
+  const { localValue: aparenciaLocal, handleChange: handleAparenciaChange } =
+    useDebouncedField(descricao.aparencia, (v) =>
+      atualizarDescricao("aparencia", v)
+    );
+
+  const { localValue: historiaLocal, handleChange: handleHistoriaChange } =
+    useDebouncedField(descricao.historia, (v) =>
+      atualizarDescricao("historia", v)
+    );
+
 
 
   // NOVAS FUNÇÕES: Atualizar recursos
@@ -821,10 +834,8 @@ const FichaCJphant = () => {
                     Aparência
                   </label>
                   <textarea
-                    value={descricao.aparencia}
-                    onChange={(e) =>
-                      atualizarDescricao("aparencia", e.target.value)
-                    }
+                    value={aparenciaLocal}
+                    onChange={handleAparenciaChange}
                     disabled={fichaTrancada}
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
                     placeholder="Descrição física"
@@ -838,10 +849,8 @@ const FichaCJphant = () => {
                     História
                   </label>
                   <textarea
-                    value={descricao.historia}
-                    onChange={(e) =>
-                      atualizarDescricao("historia", e.target.value)
-                    }
+                    value={historiaLocal}
+                    onChange={handleHistoriaChange}
                     disabled={fichaTrancada}
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
                     placeholder="Antecedentes e história"
