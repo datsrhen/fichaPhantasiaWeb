@@ -182,11 +182,15 @@ const FichaCJphant = () => {
   ] = useState(false);
 
   // Cálculos usando as funções importadas
-  const pontosRestantes = PONTOS_DISPONIVEIS - pontosUsados;
-  const custoTotal = calcularCustoTotal(
-    caracteristicasSelecionadas,
-    ancestralidades
+
+  // Itera sobre todas as ancestralidades — memoizado para não rodar a cada tecla
+  const custoTotal = React.useMemo(
+    () => calcularCustoTotal(caracteristicasSelecionadas, ancestralidades),
+    [caracteristicasSelecionadas, ancestralidades]
   );
+
+  // Aritmética pura — barato, não justifica useMemo
+  const pontosRestantes = PONTOS_DISPONIVEIS - pontosUsados;
   const pontosAncestralidadeUsados = custoTotal;
   const pontosAncestralidadeDisponiveis =
     PONTOS_ANCESTRALIDADE - pontosAncestralidadeUsados;
@@ -219,9 +223,9 @@ const FichaCJphant = () => {
   console.log("=== FIM DEBUG ATRIBUTOS PERMITIDOS ==="); */
 
   // Calcular pontos já distribuídos nos atributos
-  const pontosAncestralDistribuidos = Object.values(atributos).reduce(
-    (total, attr) => total + attr.ancestral,
-    0
+  const pontosAncestralDistribuidos = React.useMemo(
+    () => Object.values(atributos).reduce((total, attr) => total + attr.ancestral, 0),
+    [atributos]
   );
 
   // Calcular pontos restantes para distribuir
@@ -234,25 +238,30 @@ const FichaCJphant = () => {
   const totalPontosAtributoAncestralidade = ancestralidadesAtivas.length;
 
   // Calcular pontos de atributo de ancestralidade já distribuídos
-  const pontosAtributoAncestralidadeDistribuidos = Object.values(
-    pontosAtributoAncestralidade
-  ).reduce((total, pontos) => total + pontos, 0);
+  const pontosAtributoAncestralidadeDistribuidos = React.useMemo(
+    () => Object.values(pontosAtributoAncestralidade).reduce((total, pontos) => total + pontos, 0),
+    [pontosAtributoAncestralidade]
+  );
 
   // Calcular pontos de atributo de ancestralidade restantes para distribuir
   const pontosAtributoAncestralidadeRestantes =
     totalPontosAtributoAncestralidade -
     pontosAtributoAncestralidadeDistribuidos;
 
-  // Obter características e origens agrupadas
-  const caracteristicasAgrupadas = obterCaracteristicasAgrupadas(
-    caracteristicasConfirmadas,
-    ancestralidades
+  // Obter características e origens agrupadas — iteram listas, memoizados
+  const caracteristicasAgrupadas = React.useMemo(
+    () => obterCaracteristicasAgrupadas(caracteristicasConfirmadas, ancestralidades),
+    [caracteristicasConfirmadas, ancestralidades]
   );
-  const origensSelecionadasLista = obterOrigensSelecionadas(
-    origensSelecionadas,
-    origens,
-    andrilhagemSelecionada,
-    magiaDespertaSelecionada
+
+  const origensSelecionadasLista = React.useMemo(
+    () => obterOrigensSelecionadas(
+      origensSelecionadas,
+      origens,
+      andrilhagemSelecionada,
+      magiaDespertaSelecionada
+    ),
+    [origensSelecionadas, origens, andrilhagemSelecionada, magiaDespertaSelecionada]
   );
 
   useEffect(() => {
@@ -713,8 +722,6 @@ const FichaCJphant = () => {
     useDebouncedField(descricao.historia, (v) =>
       atualizarDescricao("historia", v)
     );
-
-
 
   // NOVAS FUNÇÕES: Atualizar recursos
   const atualizarRecursos = (novosRecursos) => {
