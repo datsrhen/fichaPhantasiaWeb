@@ -5,10 +5,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Plus,
-  Trash2,
   Lock,
   Unlock,
-  Check,
   ChevronDown,
   ChevronUp,
   Edit3,
@@ -58,6 +56,7 @@ import {
 } from "./components/ui-components";
 // Import do contexto
 import { useFicha } from "./context/useFicha";
+import HabilidadesSection from "./components/HabilidadesSection";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
@@ -464,7 +463,7 @@ const FichaCJphant = () => {
     }
   };
 
-  const adicionarHabilidade = () => {
+  const adicionarHabilidade = React.useCallback(() => {
     const novaHabilidade = {
       id: Date.now(),
       nome: "",
@@ -475,7 +474,7 @@ const FichaCJphant = () => {
     };
     const novasHabilidades = [...habilidades, novaHabilidade];
     actions.updateHabilidades(novasHabilidades);
-  };
+  }, [habilidades, actions]);
 
   const removerHabilidade = React.useCallback((id) => {
     if (!id) { console.warn("[removerHabilidade] id inválido:", id); return; }
@@ -1935,175 +1934,17 @@ const FichaCJphant = () => {
 
           {/* Coluna Direita: Habilidades e Talentos - Altura ajustada */}
           <div className="flex-1 flex flex-col gap-6">
-            {/* Seção de Habilidades - Agora em container flex */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <SectionHeader
-                title="Habilidades"
-                action={true}
-                actionText="Adicionar"
-                onAction={adicionarHabilidade}
-              />
-
-              {habilidades.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-lg">Nenhuma habilidade criada ainda.</p>
-                  <p className="text-sm mt-2">
-                    Clique em "Adicionar" para criar sua primeira habilidade!
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-sm">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">
-                          Nome
-                        </th>
-                        <th className="border border-gray-300 p-2 text-center">
-                          Atrib. 1
-                        </th>
-                        <th className="border border-gray-300 p-2 text-center">
-                          Atrib. 2
-                        </th>
-                        <th className="border border-gray-300 p-2 text-center">
-                          Bônus
-                        </th>
-                        <th className="border border-gray-300 p-2 text-center">
-                          Maestria
-                        </th>
-                        <th className="border border-gray-300 p-2 text-center">
-                          Dado
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {habilidades.map((hab) => (
-                        <tr key={hab.id} className="hover:bg-gray-50">
-                          <td className="border border-gray-300 p-2">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={hab.nome}
-                                onChange={(e) =>
-                                  atualizarHabilidade(
-                                    hab.id,
-                                    "nome",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={hab.trancada}
-                                placeholder="Nome da habilidade"
-                                className="flex-1 px-2 py-1 border border-gray-300 rounded focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:border-transparent"
-                              />
-                              {!hab.trancada ? (
-                                <IconButton
-                                  onClick={() => trancarHabilidade(hab.id)}
-                                  icon={Check}
-                                  title="Confirmar habilidade"
-                                  variant="green"
-                                  size="sm"
-                                />
-                              ) : (
-                                <IconButton
-                                  onClick={() => removerHabilidade(hab.id)}
-                                  icon={Trash2}
-                                  title="Remover habilidade"
-                                  variant="red"
-                                  size="sm"
-                                />
-                              )}
-                            </div>
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {hab.trancada ? (
-                              <div className="px-2 py-1 text-center">
-                                {hab.atributo1}
-                              </div>
-                            ) : (
-                              <select
-                                value={hab.atributo1}
-                                onChange={(e) =>
-                                  atualizarHabilidade(
-                                    hab.id,
-                                    "atributo1",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-2 py-1 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
-                              >
-                                {Object.keys(atributos).map((attr) => (
-                                  <option key={attr} value={attr}>
-                                    {attr}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {hab.trancada ? (
-                              <div className="px-2 py-1 text-center">
-                                {hab.atributo2}
-                              </div>
-                            ) : (
-                              <select
-                
-                                value={hab.atributo2}
-                                onChange={(e) =>
-                                  atualizarHabilidade(
-                                    hab.id,
-                                    "atributo2",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-2 py-1 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
-                              >
-                                {Object.keys(atributos).map((attr) => (
-                                  <option key={attr} value={attr}>
-                                    {attr}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center font-bold text-lg">
-                            +{bonusHabilidades[hab.id] ?? 0}
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {fichaTrancada ? (
-                              <div className="px-2 py-1 text-center">
-                                {hab.maestria} -{" "}
-                                {nivelMaestria[hab.maestria].nome}
-                              </div>
-                            ) : (
-                              <select
-                                value={hab.maestria}
-                                onChange={(e) =>
-                                  atualizarHabilidade(
-                                    hab.id,
-                                    "maestria",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-2 py-1 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
-                              >
-                                {Object.keys(nivelMaestria).map((nivel) => (
-                                  <option key={nivel} value={nivel}>
-                                    {nivel} - {nivelMaestria[nivel].nome}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center font-semibold">
-                            {nivelMaestria[hab.maestria].dado}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            {/* Seção de Habilidades — componente isolado com React.memo */}
+            <HabilidadesSection
+              habilidades={habilidades}
+              bonusHabilidades={bonusHabilidades}
+              atributos={atributos}
+              fichaTrancada={fichaTrancada}
+              adicionarHabilidade={adicionarHabilidade}
+              removerHabilidade={removerHabilidade}
+              atualizarHabilidade={atualizarHabilidade}
+              trancarHabilidade={trancarHabilidade}
+            />
 
             {/* SEÇÃO DE TALENTOS - MODIFICADA para nova estratégia */}
             <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col">
