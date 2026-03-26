@@ -57,6 +57,7 @@ import {
 // Import do contexto
 import { useFicha } from "./context/useFicha";
 import HabilidadesSection from "./components/HabilidadesSection";
+import TalentosSection from "./components/TalentosSection";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
@@ -688,18 +689,6 @@ const FichaCJphant = () => {
 
 
   // Função auxiliar para renderizar campo condicional
-  const renderCampo = (rotulo, valor) => {
-    if (!valor || valor === "" || valor === "0" || valor === 0) return null;
-    return (
-      <div className="flex">
-        <span className="font-semibold text-gray-700 min-w-[120px]">
-          {rotulo}:
-        </span>
-        <span className="text-gray-600 flex-1">{valor}</span>
-      </div>
-    );
-  };
-
   // Funções para atualizar descrição
   const atualizarDescricao = (campo, valor) => {
     actions.updateDescricao({ [campo]: valor });
@@ -1946,159 +1935,16 @@ const FichaCJphant = () => {
               trancarHabilidade={trancarHabilidade}
             />
 
-            {/* SEÇÃO DE TALENTOS - MODIFICADA para nova estratégia */}
-            <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col">
-              <SectionHeader title="Talentos" action={false}>
-                <ModeIndicator isLocked={fichaTrancada} />
-                {renderCabecalhoSecao("talentos")}
-                </SectionHeader>
-
-              {/* Área de rolagem para os talentos - MODIFICAÇÃO: max-height condicional */}
-              <div
-                className={`flex-1 space-y-4 overflow-y-auto pr-2 ${
-                  fichaTrancada ? "max-h-[500px]" : ""
-                }`}
-              >
-                {fichaTrancada ? (
-                  // MODO LEITURA - Apenas talentos selecionados
-                  <div>
-                    {Object.keys(talentosSelecionados).filter(
-                      (id) => talentosSelecionados[id]
-                    ).length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <p className="text-lg">Nenhum talento selecionado.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {/* Mostrar os talentos na ordem de seleção (mais antigo no topo) */}
-                        {Object.keys(talentosSelecionados)
-                          .filter((id) => talentosSelecionados[id])
-                          .map((talentoId) => {
-                            // Encontrar o talento pelo id
-                            let talento = null;
-                            for (const categoria of talentos) {
-                              talento = categoria.talentos.find(
-                                (t) => t.id === talentoId
-                              );
-                              if (talento) break;
-                            }
-                            if (!talento) return null;
-
-                            return (
-                              <ViewCard key={talento.id}>
-                                <div className="flex justify-between items-start mb-2">
-                                  <span className="font-semibold text-base">
-                                    {talento.nome}
-                                  </span>
-                                  {talento.pfsPes && (
-                                    <span className="text-base font-bold px-3 py-1 rounded bg-green-100 text-green-700">
-                                      {talento.pfsPes}
-                                    </span>
-                                  )}
-                                </div>
-                                {/* Renderização condicional dos campos */}
-                                {renderCampo(
-                                  "Pré-requisito",
-                                  talento.prerequisito
-                                )}
-                                <p className="text-sm text-gray-700 leading-relaxed">
-                                  {talento.descricao}
-                                </p>
-                                {renderCampo("Dificuldade+", talento.dif)}
-                                {renderCampo(
-                                  "Círculos Adicionais",
-                                  talento.circs
-                                )}
-                                {renderCampo("Feitos Adicionais", talento.fts)}
-                                {renderCampo(
-                                  "Subtipo de Criação",
-                                  talento.subtipoCriacao
-                                )}
-                                {renderCampo(
-                                  "Escola de Magia Arcana",
-                                  talento.escolaMagiaArcana
-                                )}
-                                {renderCampo(
-                                  "Ato de Magia Espiritual",
-                                  talento.atoMagiaEspiritual
-                                )}
-                              </ViewCard>
-                            );
-                          })}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // MODO EDIÇÃO - Lista completa para seleção
-                  talentos.map((categoria) => (
-                    <AccordionSection
-                      key={categoria.tipo}
-                      title={categoria.tipo}
-                      toggleId={categoria.tipo}
-                      isOpen={talentosAbertos[categoria.tipo]}
-                      onToggle={toggleTalentos}
-                    >
-                      {categoria.talentos.map((talento) => (
-                        <SelectableCard
-                          key={talento.id}
-                          isSelected={talentosSelecionados[talento.id]}
-                          onSelect={() => toggleTalento(talento.id)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={
-                                talentosSelecionados[talento.id] || false
-                              }
-                              onChange={() => toggleTalento(talento.id)}
-                              className="mt-1 w-4 h-4"
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-2">
-                                <span className="font-semibold text-base">
-                                  {talento.nome}
-                                </span>
-                                {talento.pfsPes && (
-                                  <span className="text-base font-bold px-3 py-1 rounded bg-green-100 text-green-700">
-                                    {talento.pfsPes}
-                                  </span>
-                                )}
-                              </div>
-                              {/* Renderização condicional dos campos */}
-                              {renderCampo(
-                                "Pré-requisito",
-                                talento.prerequisito
-                              )}
-                              <p className="text-sm text-gray-700 leading-relaxed">
-                                {talento.descricao}
-                              </p>
-                              {renderCampo("Dificuldade+", talento.dif)}
-                              {renderCampo(
-                                "Círculos Adicionais",
-                                talento.circs
-                              )}
-                              {renderCampo("Feitos Adicionais", talento.fts)}
-                              {renderCampo(
-                                "Subtipo de Criação",
-                                talento.subtipoCriacao
-                              )}
-                              {renderCampo(
-                                "Escola de Magia Arcana",
-                                talento.escolaMagiaArcana
-                              )}
-                              {renderCampo(
-                                "Ato de Magia Espiritual",
-                                talento.atoMagiaEspiritual
-                              )}
-                            </div>
-                          </div>
-                        </SelectableCard>
-                      ))}
-                    </AccordionSection>
-                  ))
-                )}
-              </div>
-            </div>
+            {/* Seção de Talentos — componente isolado com React.memo */}
+            <TalentosSection
+              talentos={talentos}
+              talentosSelecionados={talentosSelecionados}
+              talentosAbertos={talentosAbertos}
+              fichaTrancada={fichaTrancada}
+              onToggleTalentos={toggleTalentos}
+              onToggleTalento={toggleTalento}
+              onAnotacoes={abrirAnotacoes}
+            />
           </div>
         </div>
       </div>
