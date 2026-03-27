@@ -58,6 +58,8 @@ import {
 import { useFicha } from "./context/useFicha";
 import HabilidadesSection from "./components/HabilidadesSection";
 import TalentosSection from "./components/TalentosSection";
+import AncestralSection from "./components/AncestralSection";
+import OrigensSection from "./components/OrigensSection";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
@@ -523,74 +525,40 @@ const FichaCJphant = () => {
     setAncestralidadesAbertas((prev) => ({ ...prev, [nome]: !prev[nome] }));
   }, [ancestralidadesConfirmadas]);
 
-  const toggleCaracteristica = (caracteristicaId) => {
+  const toggleCaracteristica = React.useCallback((caracteristicaId) => {
+    if (!caracteristicaId) { console.warn("[toggleCaracteristica] id inválido:", caracteristicaId); return; }
     if (ancestralidadesConfirmadas) return;
 
-/*     console.log("=== DEBUG TOGGLE CARACTERÍSTICA ===");
-    console.log("Tentando alternar característica:", caracteristicaId); */
-
-    // CORREÇÃO: Encontrar o último hífen para separar corretamente
     const lastHyphenIndex = caracteristicaId.lastIndexOf("-");
     const ancestralidadeNome = caracteristicaId.substring(0, lastHyphenIndex);
     const caracteristicaNome = caracteristicaId.substring(lastHyphenIndex + 1);
 
-/*     console.log("Ancestralidade extraída:", ancestralidadeNome);
-    console.log("Característica extraída:", caracteristicaNome); */
+    const ancestralidade = ancestralidades.find((a) => a.nome === ancestralidadeNome);
+    if (!ancestralidade) return;
 
-    const ancestralidade = ancestralidades.find(
-      (a) => a.nome === ancestralidadeNome
-    );
-
-/*     console.log("Ancestralidade encontrada:", ancestralidade); */
-
-    if (!ancestralidade) {
-/*       console.log("Ancestralidade NÃO encontrada!"); */
-      return;
-    }
-
-    const caracteristica = ancestralidade.caracteristicas.find(
-      (c) => c.nome === caracteristicaNome
-    );
-
-/*     console.log("Característica encontrada:", caracteristica); */
-
-    if (!caracteristica) {
-/*       console.log("Característica NÃO encontrada!"); */
-      return;
-    }
+    const caracteristica = ancestralidade.caracteristicas.find((c) => c.nome === caracteristicaNome);
+    if (!caracteristica) return;
 
     const novoCusto = caracteristicasSelecionadas[caracteristicaId]
       ? pontosAncestralidadeUsados - caracteristica.custo
       : pontosAncestralidadeUsados + caracteristica.custo;
 
-/*     console.log("Custo atual:", pontosAncestralidadeUsados);
-    console.log("Novo custo:", novoCusto); */
-
-    // Verificar se excede os pontos disponíveis
-    if (novoCusto > PONTOS_ANCESTRALIDADE) {
-/*       console.log("Excede pontos disponíveis"); */
-      return;
-    }
-
-    const novasCaracteristicas = {
-      ...caracteristicasSelecionadas,
-      [caracteristicaId]: !caracteristicasSelecionadas[caracteristicaId],
-    };
-
-/*     console.log("Novas características:", novasCaracteristicas);
-    console.log("=== FIM DEBUG TOGGLE CARACTERÍSTICA ==="); */
+    if (novoCusto > PONTOS_ANCESTRALIDADE) return;
 
     actions.updateAncestralidades({
-      caracteristicasSelecionadas: novasCaracteristicas,
+      caracteristicasSelecionadas: {
+        ...caracteristicasSelecionadas,
+        [caracteristicaId]: !caracteristicasSelecionadas[caracteristicaId],
+      },
     });
-  };
+  }, [ancestralidadesConfirmadas, ancestralidades, caracteristicasSelecionadas, pontosAncestralidadeUsados, actions]);
 
-  const confirmarAncestralidades = () => {
+  const confirmarAncestralidades = React.useCallback(() => {
     actions.updateAncestralidades({
       ancestralidadesConfirmadas: true,
       caracteristicasConfirmadas: { ...caracteristicasSelecionadas },
     });
-  };
+  }, [actions, caracteristicasSelecionadas]);
 
   // Funções para distribuição de pontos de ancestralidade nos atributos
   const iniciarDistribuicaoAncestral = () => {
@@ -621,52 +589,40 @@ const FichaCJphant = () => {
     setOrigensAbertas((prev) => ({ ...prev, [tipo]: !prev[tipo] }));
   }, [origensConfirmadas]);
 
-  const toggleOpcaoOrigem = (opcaoId) => {
+  const toggleOpcaoOrigem = React.useCallback((opcaoId) => {
+    if (!opcaoId) { console.warn("[toggleOpcaoOrigem] opcaoId inválido:", opcaoId); return; }
     if (origensConfirmadas) return;
 
-    const [tipo, nome] = opcaoId.split("-");
+    const [tipo] = opcaoId.split("-");
     const totalAtual = calcularTotalOrigensSelecionadas(
-      origensSelecionadas,
-      andrilhagemSelecionada,
-      magiaDespertaSelecionada
+      origensSelecionadas, andrilhagemSelecionada, magiaDespertaSelecionada
     );
-
-    // Verificar se está tentando selecionar uma nova opção quando já tem 3
     const jaSelecionada =
       (tipo === "Andrilhagem" && andrilhagemSelecionada) ||
       (tipo === "Magia Desperta" && magiaDespertaSelecionada) ||
       origensSelecionadas[tipo] === opcaoId;
 
-    if (!jaSelecionada && totalAtual >= 3) {
-      return; // Não permite selecionar mais de 3 opções
-    }
+    if (!jaSelecionada && totalAtual >= 3) return;
 
-    // Verificar se é uma das opções especiais
     if (tipo === "Andrilhagem") {
-      actions.updateOrigens({
-        andrilhagemSelecionada: !andrilhagemSelecionada,
-      });
+      actions.updateOrigens({ andrilhagemSelecionada: !andrilhagemSelecionada });
       return;
     }
-
     if (tipo === "Magia Desperta") {
-      actions.updateOrigens({
-        magiaDespertaSelecionada: !magiaDespertaSelecionada,
-      });
+      actions.updateOrigens({ magiaDespertaSelecionada: !magiaDespertaSelecionada });
       return;
     }
+    actions.updateOrigens({
+      origensSelecionadas: {
+        ...origensSelecionadas,
+        [tipo]: origensSelecionadas[tipo] === opcaoId ? null : opcaoId,
+      },
+    });
+  }, [origensConfirmadas, origensSelecionadas, andrilhagemSelecionada, magiaDespertaSelecionada, actions]);
 
-    // Para as opções normais, usar seleção única por tipo
-    const novasOrigens = {
-      ...origensSelecionadas,
-      [tipo]: origensSelecionadas[tipo] === opcaoId ? null : opcaoId,
-    };
-    actions.updateOrigens({ origensSelecionadas: novasOrigens });
-  };
-
-  const confirmarOrigens = () => {
+  const confirmarOrigens = React.useCallback(() => {
     actions.updateOrigens({ origensConfirmadas: true });
-  };
+  }, [actions]);
 
 
 
@@ -1461,464 +1417,33 @@ const FichaCJphant = () => {
               </div>
             </div>
 
-            {/* Seção de Ancestralidades - Largura fixa */}
-            <div className="w-80 bg-white rounded-lg shadow-lg p-6 flex flex-col">
-              <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Ancestralidades
-                </h2>
-                {!ancestralidadesConfirmadas && (
-                  <div
-                    className={`text-lg font-bold px-3 py-1 rounded ${
-                      pontosAncestralidadeDisponiveis < 0
-                        ? "bg-red-100 text-red-700"
-                        : pontosAncestralidadeDisponiveis > 0
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                  >
-                    {pontosAncestralidadeDisponiveis}/{PONTOS_ANCESTRALIDADE}
-                  </div>
-                )}
-              </div>
+            {/* Seção de Ancestralidades — componente isolado com React.memo */}
+            <AncestralSection
+              ancestralidades={ancestralidades}
+              ancestralidadesConfirmadas={ancestralidadesConfirmadas}
+              caracteristicasSelecionadas={caracteristicasSelecionadas}
+              caracteristicasAgrupadas={caracteristicasAgrupadas}
+              ancestralidadesAbertas={ancestralidadesAbertas}
+              pontosAncestralidadeDisponiveis={pontosAncestralidadeDisponiveis}
+              onToggleAncestralidade={toggleAncestralidade}
+              onToggleCaracteristica={toggleCaracteristica}
+              onConfirmar={confirmarAncestralidades}
+            />
 
-              {/* Área de rolagem para as ancestralidades */}
-              <div
-                className={`flex-1 space-y-4 overflow-y-auto pr-2 ${
-                  ancestralidadesConfirmadas ? "max-h-[500px]" : "max-h-[500px]"
-                }`}
-              >
-                {!ancestralidadesConfirmadas ? (
-                  // Modo de seleção
-                  ancestralidades.map((ancestralidade) => (
-                    <AccordionSection
-                      key={ancestralidade.nome}
-                      title={ancestralidade.nome}
-                      toggleId={ancestralidade.nome}
-                      isOpen={ancestralidadesAbertas[ancestralidade.nome]}
-                      onToggle={toggleAncestralidade}
-                    >
-                      {ancestralidade.caracteristicas.map((caracteristica) => {
-                        const disabled =
-                          pontosAncestralidadeDisponiveis <
-                            caracteristica.custo &&
-                          !caracteristicasSelecionadas[caracteristica.id];
-
-                        return (
-                          <SelectableCard
-                            key={caracteristica.id}
-                            isSelected={
-                              caracteristicasSelecionadas[caracteristica.id]
-                            }
-                            onSelect={() =>
-                              toggleCaracteristica(caracteristica.id)
-                            }
-                            disabled={disabled}
-                          >
-                            <div className="flex items-start gap-3">
-                              <input
-                                type="checkbox"
-                                checked={
-                                  caracteristicasSelecionadas[
-                                    caracteristica.id
-                                  ] || false
-                                }
-                                onChange={() =>
-                                  toggleCaracteristica(caracteristica.id)
-                                }
-                                className="mt-1 w-4 h-4"
-                                disabled={disabled}
-                              />
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start mb-2">
-                                  <span className="font-semibold text-base">
-                                    {caracteristica.nome}
-                                  </span>
-                                  <span
-                                    className={`text-base font-bold px-3 py-1 rounded ${
-                                      caracteristica.custo < 0
-                                        ? "bg-red-100 text-red-700"
-                                        : caracteristica.custo > 0
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-700"
-                                    }`}
-                                  >
-                                    {caracteristica.custo > 0
-                                      ? `+${caracteristica.custo}`
-                                      : caracteristica.custo}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-gray-700 leading-relaxed">
-                                  {caracteristica.descricao}
-                                </p>
-                              </div>
-                            </div>
-                          </SelectableCard>
-                        );
-                      })}
-                    </AccordionSection>
-                  ))
-                ) : (
-                  // Modo de visualização (após confirmação)
-                  <div>
-                    {Object.keys(caracteristicasAgrupadas).length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <p className="text-lg">
-                          Nenhuma característica selecionada.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {Object.keys(caracteristicasAgrupadas).map(
-                          (ancestralidadeNome) => (
-                            <ViewCard key={ancestralidadeNome}>
-                              <div className="bg-green-100 px-4 py-2 border-b border-green-200 mb-4 -mx-4 -mt-4">
-                                <h4 className="font-bold text-lg text-green-800">
-                                  {ancestralidadeNome}
-                                </h4>
-                              </div>
-                              <div className="space-y-4">
-                                {caracteristicasAgrupadas[
-                                  ancestralidadeNome
-                                ].map((caracteristica) => (
-                                  <ViewCard key={caracteristica.id}>
-                                    <div className="flex justify-between items-start mb-2">
-                                      <span className="font-semibold text-base">
-                                        {caracteristica.nome}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 leading-relaxed">
-                                      {caracteristica.descricao}
-                                    </p>
-                                  </ViewCard>
-                                ))}
-                              </div>
-                            </ViewCard>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Botão de Confirmação */}
-              {!ancestralidadesConfirmadas && (
-                <div className="pt-4 mt-4 border-t border-gray-200">
-                  <ConfirmButton
-                    onClick={confirmarAncestralidades}
-                    disabled={pontosAncestralidadeDisponiveis < 0}
-                    variant={
-                      pontosAncestralidadeDisponiveis < 0 ? "gray" : "green"
-                    }
-                  >
-                    Confirmar Seleção
-                  </ConfirmButton>
-                </div>
-              )}
-            </div>
-
-            {/* Seção de Origens - Corrigida */}
-            <div className="w-80 bg-white rounded-lg shadow-lg p-6 flex flex-col">
-              <SectionHeader
-                title="Origens"
-                badge={
-                  !origensConfirmadas
-                    ? `(${calcularTotalOrigensSelecionadas(
-                        origensSelecionadas,
-                        andrilhagemSelecionada,
-                        magiaDespertaSelecionada
-                      )}/3)`
-                    : ""
-                }
-              >
-                {renderCabecalhoSecao("origens")}
-              </SectionHeader>
-
-              {!origensConfirmadas && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="text-blue-600" size={20} />
-                    <span className="text-sm text-blue-700">
-                      Selecione no máximo 3 origens no total (categorias
-                      principais + Andrilhagem/Magia Desperta)
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Área de rolagem para as origens */}
-              <div
-                className={`flex-1 space-y-4 overflow-y-auto pr-2 ${
-                  origensConfirmadas ? "max-h-[500px]" : "max-h-[500px]"
-                }`}
-              >
-                {!origensConfirmadas ? (
-                  // Modo de seleção
-                  <>
-                    {/* Categorias principais */}
-                    {origens
-                      .filter(
-                        (origem) =>
-                          origem.tipo === "Infância" ||
-                          origem.tipo === "Estudos" ||
-                          origem.tipo === "Ofícios"
-                      )
-                      .map((origem) => (
-                        <AccordionSection
-                          key={origem.tipo}
-                          title={origem.tipo}
-                          toggleId={origem.tipo}
-                          isOpen={origensAbertas[origem.tipo]}
-                          onToggle={toggleOrigem}
-                        >
-                          {origem.opcoes.map((opcao) => {
-                            const totalSelecionadas =
-                              calcularTotalOrigensSelecionadas(
-                                origensSelecionadas,
-                                andrilhagemSelecionada,
-                                magiaDespertaSelecionada
-                              );
-                            const disabled =
-                              totalSelecionadas >= 3 &&
-                              !origensSelecionadas[origem.tipo];
-
-                            return (
-                              <SelectableCard
-                                key={opcao.id}
-                                isSelected={
-                                  origensSelecionadas[origem.tipo] === opcao.id
-                                }
-                                onSelect={() => toggleOpcaoOrigem(opcao.id)}
-                                disabled={disabled}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <input
-                                    type="radio"
-                                    checked={
-                                      origensSelecionadas[origem.tipo] ===
-                                      opcao.id
-                                    }
-                                    onChange={() => {
-                                      if (!disabled) {
-                                        toggleOpcaoOrigem(opcao.id);
-                                      }
-                                    }}
-                                    className="mt-1 w-4 h-4"
-                                    name={origem.tipo}
-                                    disabled={disabled}
-                                  />
-                                  <div className="flex-1">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <span className="font-semibold text-base">
-                                        {opcao.nome}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                                      {opcao.descricao}
-                                    </p>
-                                  </div>
-                                </div>
-                              </SelectableCard>
-                            );
-                          })}
-                        </AccordionSection>
-                      ))}
-
-                    {/* Opções especiais - Andrilhagem e Magia Desperta */}
-                    <div className="border border-gray-200 rounded-lg">
-                      <div className="p-4 space-y-4">
-                        {/* Andrilhagem */}
-                        <SelectableCard
-                          isSelected={andrilhagemSelecionada}
-                          onSelect={() => {
-                            const totalSelecionadas =
-                              calcularTotalOrigensSelecionadas(
-                                origensSelecionadas,
-                                andrilhagemSelecionada,
-                                magiaDespertaSelecionada
-                              );
-                            if (
-                              !(
-                                totalSelecionadas >= 3 &&
-                                !andrilhagemSelecionada
-                              )
-                            ) {
-                              actions.updateOrigens({
-                                andrilhagemSelecionada: !andrilhagemSelecionada,
-                              });
-                            }
-                          }}
-                          disabled={
-                            calcularTotalOrigensSelecionadas(
-                              origensSelecionadas,
-                              andrilhagemSelecionada,
-                              magiaDespertaSelecionada
-                            ) >= 3 && !andrilhagemSelecionada
-                          }
-                        >
-                          <div className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={andrilhagemSelecionada}
-                              onChange={() => {
-                                const totalSelecionadas =
-                                  calcularTotalOrigensSelecionadas(
-                                    origensSelecionadas,
-                                    andrilhagemSelecionada,
-                                    magiaDespertaSelecionada
-                                  );
-                                if (
-                                  !(
-                                    totalSelecionadas >= 3 &&
-                                    !andrilhagemSelecionada
-                                  )
-                                ) {
-                                  actions.updateOrigens({
-                                    andrilhagemSelecionada:
-                                      !andrilhagemSelecionada,
-                                  });
-                                }
-                              }}
-                              className="mt-1 w-4 h-4"
-                              disabled={
-                                calcularTotalOrigensSelecionadas(
-                                  origensSelecionadas,
-                                  andrilhagemSelecionada,
-                                  magiaDespertaSelecionada
-                                ) >= 3 && !andrilhagemSelecionada
-                              }
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-2">
-                                <span className="font-semibold text-base">
-                                  Andrilhagem
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                                1 metro em todas as velocidades de movimento nos
-                                níveis 1, 4, 8, 12, 16. Um talento de
-                                sobrevivência. Uma habilidade extra em nível
-                                iniciante relacionada a sociedades,
-                                sobrevivência ou intuição.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectableCard>
-
-                        {/* Magia Desperta */}
-                        <SelectableCard
-                          isSelected={magiaDespertaSelecionada}
-                          onSelect={() => {
-                            const totalSelecionadas =
-                              calcularTotalOrigensSelecionadas(
-                                origensSelecionadas,
-                                andrilhagemSelecionada,
-                                magiaDespertaSelecionada
-                              );
-                            if (
-                              !(
-                                totalSelecionadas >= 3 &&
-                                !magiaDespertaSelecionada
-                              )
-                            ) {
-                              actions.updateOrigens({
-                                magiaDespertaSelecionada:
-                                  !magiaDespertaSelecionada,
-                              });
-                            }
-                          }}
-                          disabled={
-                            calcularTotalOrigensSelecionadas(
-                              origensSelecionadas,
-                              andrilhagemSelecionada,
-                              magiaDespertaSelecionada
-                            ) >= 3 && !magiaDespertaSelecionada
-                          }
-                        >
-                          <div className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={magiaDespertaSelecionada}
-                              onChange={() => {
-                                const totalSelecionadas =
-                                  calcularTotalOrigensSelecionadas(
-                                    origensSelecionadas,
-                                    andrilhagemSelecionada,
-                                    magiaDespertaSelecionada
-                                  );
-                                if (
-                                  !(
-                                    totalSelecionadas >= 3 &&
-                                    !magiaDespertaSelecionada
-                                  )
-                                ) {
-                                  actions.updateOrigens({
-                                    magiaDespertaSelecionada:
-                                      !magiaDespertaSelecionada,
-                                  });
-                                }
-                              }}
-                              className="mt-1 w-4 h-4"
-                              disabled={
-                                calcularTotalOrigensSelecionadas(
-                                  origensSelecionadas,
-                                  andrilhagemSelecionada,
-                                  magiaDespertaSelecionada
-                                ) >= 3 && !magiaDespertaSelecionada
-                              }
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-2">
-                                <span className="font-semibold text-base">
-                                  Magia Desperta
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                                um talento de Magia Arcana ou Espiritual.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectableCard>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  // Modo de visualização (após confirmação) - APENAS AS OPÇÕES SELECIONADAS
-                  <div>
-                    {origensSelecionadasLista.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <p className="text-lg">Nenhuma origem selecionada.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {origensSelecionadasLista.map((opcao) => (
-                          <ViewCard key={opcao.id}>
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-semibold text-base">
-                                {opcao.nome}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                              {opcao.descricao}
-                            </p>
-                          </ViewCard>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Botão de Confirmação */}
-              {!origensConfirmadas && (
-                <div className="pt-4 mt-4 border-t border-gray-200">
-                  <ConfirmButton onClick={confirmarOrigens}>
-                    Confirmar Seleção
-                  </ConfirmButton>
-                </div>
-              )}
-            </div>
+            {/* Seção de Origens — componente isolado com React.memo */}
+            <OrigensSection
+              origens={origens}
+              origensConfirmadas={origensConfirmadas}
+              origensSelecionadas={origensSelecionadas}
+              andrilhagemSelecionada={andrilhagemSelecionada}
+              magiaDespertaSelecionada={magiaDespertaSelecionada}
+              origensSelecionadasLista={origensSelecionadasLista}
+              origensAbertas={origensAbertas}
+              onToggleOrigem={toggleOrigem}
+              onToggleOpcao={toggleOpcaoOrigem}
+              onConfirmar={confirmarOrigens}
+              onAnotacoes={abrirAnotacoes}
+            />
           </div>
 
           {/* Coluna Direita: Habilidades e Talentos - Altura ajustada */}
