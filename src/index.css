@@ -28,7 +28,7 @@
   @media (max-width: 1024px) {
     font-size: 16px;
   }
-};
+}
 
 @tailwind base;
 @tailwind components;
@@ -112,5 +112,5 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
-};
+}
 
