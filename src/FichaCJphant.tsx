@@ -3,7 +3,6 @@
 import React, { useState, useEffect, memo } from "react";
 import {
   AlertCircle,
-  CheckCircle2,
   Plus,
   Lock,
   Unlock,
@@ -40,15 +39,12 @@ import {
   obterOrigensSelecionadas,
 } from "./util/calculations";
 import {
-  IncrementDecrementButton,
   ConfirmButton,
   IconButton,
   AccordionSection,
   SelectableCard,
   ViewCard,
-  StatusPanel,
   SectionHeader,
-  BonusInput,
   ModeIndicator,
   LockToggleButton,
   RecursoField,
@@ -60,6 +56,8 @@ import HabilidadesSection from "./components/HabilidadesSection";
 import TalentosSection from "./components/TalentosSection";
 import AncestralSection from "./components/AncestralSection";
 import OrigensSection from "./components/OrigensSection";
+import AtributosSection from "./components/AtributosSection";
+import MovimentacaoSection from "./components/MovimentacaoSection";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
@@ -314,139 +312,73 @@ const FichaCJphant = () => {
     actions.updateAtributos(novosAtributos);
   };
 
-  const incrementar = (atributo) => {
+  const incrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && pontosRestantes > 0) {
       alterarAtributo(atributo, atributos[atributo].base + 1);
     }
-  };
+  }, [atributosTrancados, pontosRestantes, atributos, alterarAtributo]);
 
-  const decrementar = (atributo) => {
+  const decrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && atributos[atributo].base > VALOR_MINIMO) {
       alterarAtributo(atributo, atributos[atributo].base - 1);
     }
-  };
+  }, [atributosTrancados, atributos, alterarAtributo]);
 
   // Funções para pontos de ancestralidade nos atributos
-  const incrementarAncestral = (atributo) => {
-    if (
-      editandoAncestralAtributos &&
-      pontosAncestralRestantesParaDistribuir > 0
-    ) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral + 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+  const incrementarAncestral = React.useCallback((atributo) => {
+    if (editandoAncestralAtributos && pontosAncestralRestantesParaDistribuir > 0) {
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral + 1 } });
     }
-  };
+  }, [editandoAncestralAtributos, pontosAncestralRestantesParaDistribuir, atributos, actions]);
 
-  const decrementarAncestral = (atributo) => {
+  const decrementarAncestral = React.useCallback((atributo) => {
     if (editandoAncestralAtributos && atributos[atributo].ancestral > 0) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral - 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral - 1 } });
     }
-  };
+  }, [editandoAncestralAtributos, atributos, actions]);
 
   // Funções para pontos de atributo de ancestralidade
-  const incrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      pontosAtributoAncestralidadeRestantes > 0 &&
-      atributosPermitidos.includes(atributo)
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  const incrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && pontosAtributoAncestralidadeRestantes > 0 && atributosPermitidos.includes(atributo)) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1 } });
     }
-  };
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidadeRestantes, atributosPermitidos, pontosAtributoAncestralidade, actions]);
 
-  const decrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      (pontosAtributoAncestralidade[atributo] || 0) > 0
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  const decrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && (pontosAtributoAncestralidade[atributo] || 0) > 0) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1 } });
     }
-  };
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidade, actions]);
 
-  // Funções para bônus (sempre editáveis) - MODIFICADAS para permitir valores negativos
-  const incrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus + 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const incrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus + 1 } });
+  }, [atributos, actions]);
 
-  const decrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus - 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const decrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus - 1 } });
+  }, [atributos, actions]);
 
-  const alterarBonus = (atributo, valor) => {
-    const novoValor = parseInt(valor) || 0;
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: novoValor,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const alterarBonus = React.useCallback((atributo, valor) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: parseInt(valor) || 0 } });
+  }, [atributos, actions]);
 
-  // NOVAS FUNÇÕES: Atualizar movimentação
-  const atualizarMovimentacao = (campo, valor) => {
+  const atualizarMovimentacao = React.useCallback((campo, valor) => {
     actions.updateMovimentacao({ [campo]: valor });
-  };
+  }, [actions]);
 
-  const atualizarMovimentacaoChoque = (campo, valor) => {
-    actions.updateMovimentacao({
-      choque: { ...movimentacao.choque, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoChoque = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ choque: { ...movimentacao.choque, [campo]: valor } });
+  }, [actions, movimentacao.choque]);
 
-  const atualizarMovimentacaoRestricao = (campo, valor) => {
-    actions.updateMovimentacao({
-      restricao: { ...movimentacao.restricao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoRestricao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ restricao: { ...movimentacao.restricao, [campo]: valor } });
+  }, [actions, movimentacao.restricao]);
 
-  const atualizarMovimentacaoEvasao = (campo, valor) => {
-    actions.updateMovimentacao({
-      evasao: { ...movimentacao.evasao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoEvasao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ evasao: { ...movimentacao.evasao, [campo]: valor } });
+  }, [actions, movimentacao.evasao]);
 
-  const resetar = () => {
+  const resetar = React.useCallback(() => {
     if (!atributosTrancados) {
       actions.updateAtributos({
         INT: { base: 1, ancestral: 0, bonus: 0 },
@@ -458,13 +390,13 @@ const FichaCJphant = () => {
         ESP: { base: 1, ancestral: 0, bonus: 0 },
       });
     }
-  };
+  }, [atributosTrancados, actions]);
 
-  const trancarAtributos = () => {
+  const trancarAtributos = React.useCallback(() => {
     if (pontosRestantes === 0) {
       actions.setAtributosTrancados(true);
     }
-  };
+  }, [pontosRestantes, actions]);
 
   const adicionarHabilidade = React.useCallback(() => {
     const novaHabilidade = {
@@ -561,26 +493,23 @@ const FichaCJphant = () => {
   }, [actions, caracteristicasSelecionadas]);
 
   // Funções para distribuição de pontos de ancestralidade nos atributos
-  const iniciarDistribuicaoAncestral = () => {
+  const iniciarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(true);
-  };
+  }, []);
 
-  const confirmarDistribuicaoAncestral = () => {
+  const confirmarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(false);
     actions.updateAncestralidades({ distribuicaoAncestralConfirmada: true });
-  };
+  }, [actions]);
 
-  // Funções para distribuição de pontos de atributo de ancestralidade
-  const iniciarDistribuicaoAtributoAncestralidade = () => {
+  const iniciarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(true);
-  };
+  }, []);
 
-  const confirmarDistribuicaoAtributoAncestralidade = () => {
+  const confirmarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(false);
-    actions.updateAncestralidades({
-      distribuicaoAtributoAncestralidadeConfirmada: true,
-    });
-  };
+    actions.updateAncestralidades({ distribuicaoAtributoAncestralidadeConfirmada: true });
+  }, [actions]);
 
 
   // Funções para Origens
@@ -1023,401 +952,53 @@ const FichaCJphant = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Coluna Esquerda - Largura independente para cada caixa */}
           <div className="flex flex-col gap-6">
-            {/* Seção de Atributos - Mantém largura estreita */}
-            <div className="w-80 bg-white rounded-lg shadow-lg p-4">
-              <SectionHeader title="Atributos">
-                {renderCabecalhoSecao("atributos")}
-              </SectionHeader>
-                      
-              {/* Seção de Pontos Restantes */}
-              {!atributosTrancados && (
-                <StatusPanel
-                  icon={pontosRestantes === 0 ? CheckCircle2 : AlertCircle}
-                  iconColor={pontosRestantes === 0 ? "green" : "blue"}
-                  title="Restantes"
-                  value={pontosRestantes}
-                  valueColor="blue"
-                  action={pontosRestantes === 0}
-                  actionText="Confirmar Distribuição"
-                  onAction={trancarAtributos}
-                />
-              )}
+            {/* Seção de Atributos — componente isolado com React.memo */}
+            <AtributosSection
+              atributos={atributos}
+              atributosTrancados={atributosTrancados}
+              pontosRestantes={pontosRestantes}
+              pontosAtributoAncestralidade={pontosAtributoAncestralidade}
+              atributosPermitidos={atributosPermitidos}
+              ancestralidadesConfirmadas={ancestralidadesConfirmadas}
+              distribuicaoAncestralConfirmada={distribuicaoAncestralConfirmada}
+              distribuicaoAtributoAncestralidadeConfirmada={distribuicaoAtributoAncestralidadeConfirmada}
+              pontosParaDistribuir={pontosParaDistribuir}
+              pontosAncestralRestantesParaDistribuir={pontosAncestralRestantesParaDistribuir}
+              pontosAtributoAncestralidadeRestantes={pontosAtributoAncestralidadeRestantes}
+              totalPontosAtributoAncestralidade={totalPontosAtributoAncestralidade}
+              editandoAncestralAtributos={editandoAncestralAtributos}
+              editandoPontosAtributoAncestralidade={editandoPontosAtributoAncestralidade}
+              onAnotacoes={abrirAnotacoes}
+              onTrancar={trancarAtributos}
+              onResetar={resetar}
+              onIncrementar={incrementar}
+              onDecrementar={decrementar}
+              onIncrementarAncestral={incrementarAncestral}
+              onDecrementarAncestral={decrementarAncestral}
+              onIncrementarAtributoAncestralidade={incrementarAtributoAncestralidade}
+              onDecrementarAtributoAncestralidade={decrementarAtributoAncestralidade}
+              onIncrementarBonus={incrementarBonus}
+              onDecrementarBonus={decrementarBonus}
+              onAlterarBonus={alterarBonus}
+              onIniciarDistribuicaoAncestral={iniciarDistribuicaoAncestral}
+              onConfirmarDistribuicaoAncestral={confirmarDistribuicaoAncestral}
+              onIniciarDistribuicaoAtributo={iniciarDistribuicaoAtributoAncestralidade}
+              onConfirmarDistribuicaoAtributo={confirmarDistribuicaoAtributoAncestralidade}
+            />
 
-              {/* Seção de Pontos de Ancestralidade para Atributos */}
-              {ancestralidadesConfirmadas &&
-                pontosParaDistribuir > 0 &&
-                !distribuicaoAncestralConfirmada && (
-                  <StatusPanel
-                    icon={AlertCircle}
-                    iconColor="purple"
-                    title="Pontos de Ancestralidade"
-                    value={`${pontosAncestralRestantesParaDistribuir} / ${pontosParaDistribuir}`}
-                    valueColor="purple"
-                    action={true}
-                    actionText={
-                      !editandoAncestralAtributos ? "Distribuir" : "Confirmar"
-                    }
-                    onAction={
-                      !editandoAncestralAtributos
-                        ? iniciarDistribuicaoAncestral
-                        : confirmarDistribuicaoAncestral
-                    }
-                    className="bg-purple-50 border-2 border-purple-200 text-xs"
-                  />
-                )}
+            {/* Seção de Movimentação — componente isolado com React.memo */}
+            <MovimentacaoSection
+              atributos={atributos}
+              movimentacao={movimentacao}
+              fichaTrancada={fichaTrancada}
+              pontosAtributoAncestralidade={pontosAtributoAncestralidade}
+              onAtualizar={atualizarMovimentacao}
+              onAtualizarChoque={atualizarMovimentacaoChoque}
+              onAtualizarRestricao={atualizarMovimentacaoRestricao}
+              onAtualizarEvasao={atualizarMovimentacaoEvasao}
+            />
 
-              {/* Seção de Pontos de Atributo de Ancestralidade */}
-              {ancestralidadesConfirmadas &&
-                totalPontosAtributoAncestralidade > 0 &&
-                !distribuicaoAtributoAncestralidadeConfirmada && (
-                  <StatusPanel
-                    icon={AlertCircle}
-                    iconColor="indigo"
-                    title="Pontos de Atributo de Ancestralidade"
-                    value={`${pontosAtributoAncestralidadeRestantes} / ${totalPontosAtributoAncestralidade}`}
-                    valueColor="indigo"
-                    action={true}
-                    actionText={
-                      !editandoPontosAtributoAncestralidade
-                        ? "Distribuir"
-                        : "Confirmar"
-                    }
-                    onAction={
-                      !editandoPontosAtributoAncestralidade
-                        ? iniciarDistribuicaoAtributoAncestralidade
-                        : confirmarDistribuicaoAtributoAncestralidade
-                    }
-                    className="bg-indigo-50 border-2 border-indigo-200 text-xs"
-                  >
-                    <div className="text-xs text-indigo-600 mb-2">
-                      Atributos permitidos: {atributosPermitidos.join(", ")}
-                    </div>
-                  </StatusPanel>
-                )}
-
-              <div className="space-y-2">
-                {/* CABEÇALHO DAS COLUNAS - AGORA ACIMA DE TUDO */}
-                <div className="flex justify-end gap-1 pb-2 text-xs text-gray-500 border-b border-gray-200">
-                  <div className="min-w-[34px] text-center">Total</div>
-                  <div className="min-w-[34px] text-center">Base</div>
-                  <div className="min-w-[34px] text-center">Anc.</div>
-                  <div className="min-w-[34px] text-center">Bônus</div>
-                </div>
-
-                {Object.keys(atributos).map((atributo) => {
-                  const total =
-                    atributos[atributo].base +
-                    atributos[atributo].ancestral +
-                    (pontosAtributoAncestralidade[atributo] || 0) +
-                    atributos[atributo].bonus;
-                  const pontosAtributoAncestral =
-                    pontosAtributoAncestralidade[atributo] || 0;
-                  const atributoPermitido =
-                    atributosPermitidos.includes(atributo);
-
-                  return (
-                    <div
-                      key={atributo}
-                      className={`border border-gray-200 rounded p-2 transition-colors ${
-                        !atributoPermitido &&
-                        editandoPontosAtributoAncestralidade
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:border-blue-300"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <div className="min-w-0 flex-1">
-                          <div className="font-bold text-sm">{atributo}</div>
-                          <div className="text-xs text-gray-600 truncate">
-                            {nomeCompleto[atributo]}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <div className="bg-gray-300 rounded px-1 py-1 min-w-[34px] text-center">
-                            <div className="text-lg font-bold">{total}</div>
-                          </div>
-
-                          <div className="min-w-[34px] text-center">
-                            {!atributosTrancados ? (
-                              <IncrementDecrementButton
-                                onIncrement={() => incrementar(atributo)}
-                                onDecrement={() => decrementar(atributo)}
-                                value={atributos[atributo].base}
-                                incrementDisabled={pontosRestantes <= 0}
-                                decrementDisabled={
-                                  atributos[atributo].base <= VALOR_MINIMO
-                                }
-                                color="green"
-                              />
-                            ) : (
-                              <div className="text-base font-bold">
-                                {atributos[atributo].base}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="min-w-[34px] text-center">
-                            {editandoAncestralAtributos ? (
-                              <IncrementDecrementButton
-                                onIncrement={() =>
-                                  incrementarAncestral(atributo)
-                                }
-                                onDecrement={() =>
-                                  decrementarAncestral(atributo)
-                                }
-                                value={
-                                  atributos[atributo].ancestral +
-                                  pontosAtributoAncestral
-                                }
-                                incrementDisabled={
-                                  pontosAncestralRestantesParaDistribuir <= 0
-                                }
-                                decrementDisabled={
-                                  atributos[atributo].ancestral <= 0
-                                }
-                                color="purple"
-                              />
-                            ) : editandoPontosAtributoAncestralidade ? (
-                              <IncrementDecrementButton
-                                onIncrement={() =>
-                                  incrementarAtributoAncestralidade(atributo)
-                                }
-                                onDecrement={() =>
-                                  decrementarAtributoAncestralidade(atributo)
-                                }
-                                value={
-                                  atributos[atributo].ancestral +
-                                  pontosAtributoAncestral
-                                }
-                                incrementDisabled={
-                                  pontosAtributoAncestralidadeRestantes <= 0 ||
-                                  !atributoPermitido
-                                }
-                                decrementDisabled={pontosAtributoAncestral <= 0}
-                                color="indigo"
-                              />
-                            ) : (
-                              <div className="text-base font-bold">
-                                {atributos[atributo].ancestral +
-                                  pontosAtributoAncestral}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* NOVA COLUNA BÔNUS - MODIFICADA para permitir valores negativos */}
-                          <div className="min-w-[34px] text-center">
-                            <BonusInput
-                              value={atributos[atributo].bonus}
-                              onIncrement={() => incrementarBonus(atributo)}
-                              onDecrement={() => decrementarBonus(atributo)}
-                              onChange={(e) =>
-                                alterarBonus(atributo, e.target.value)
-                              }
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {!atributosTrancados && (
-                <button
-                  onClick={resetar}
-                  className="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded transition-colors text-sm"
-                >
-                  Resetar Atributos
-                </button>
-              )}
-            </div>
-
-            {/* Seção de Movimentação - NOVA SEÇÃO */}
-            <div className="w-80 bg-white rounded-lg shadow-lg p-4">
-              <SectionHeader title="Movimentação" />
-
-              <div className="space-y-3">
-                {/* Campo Veloc. */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700 min-w-[50px]">
-                    Veloc.
-                  </label>
-                  <input
-                    type="text"
-                    value={movimentacao.velocidade || ""}
-                    onChange={(e) =>
-                      atualizarMovimentacao("velocidade", e.target.value)
-                    }
-                    className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none"
-                    placeholder="Velocidade de movimento"
-                    disabled={fichaTrancada}
-                  />
-                </div>
-
-                {/* Tabela de Movimentação */}
-                <div className="border border-gray-200 rounded">
-                  {/* Cabeçalho da tabela */}
-                  <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-50">
-                    <div className="p-2 text-xs font-medium text-gray-700 border-r border-gray-200">
-                      mov.
-                    </div>
-                    <div className="p-2 text-xs font-medium text-gray-700 border-r border-gray-200">
-                      causado
-                    </div>
-                    <div className="p-2 text-xs font-medium text-gray-700">
-                      mitigado
-                    </div>
-                  </div>
-
-                  {/* Linha Choque */}
-                  <div className="grid grid-cols-3 border-b border-gray-200">
-                    <div className="p-2 text-xs font-medium text-gray-700 border-r border-gray-200">
-                      Choque
-                    </div>
-                    <div className="p-2 border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="number"
-                          value={movimentacao.choque.atual || 0}
-                          onChange={(e) =>
-                            atualizarMovimentacaoChoque(
-                              "atual",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-8 px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none"
-                          min="0"
-                        />
-                        <span className="text-xs">/</span>
-                        <span className="w-8 px-1 py-0.5 text-xs text-center font-medium">
-                          {Math.floor(
-                            (atributos.INT.base +
-                              atributos.INT.ancestral +
-                              (pontosAtributoAncestralidade.INT || 0) +
-                              atributos.INT.bonus) /
-                              2
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <input
-                        type="number"
-                        value={movimentacao.mitigadoChoque || 0}
-                        onChange={(e) =>
-                          atualizarMovimentacao(
-                            "mitigadoChoque",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
-                        disabled={fichaTrancada}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Linha Restrição */}
-                  <div className="grid grid-cols-3 border-b border-gray-200">
-                    <div className="p-2 text-xs font-medium text-gray-700 border-r border-gray-200">
-                      Restrição
-                    </div>
-                    <div className="p-2 border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="number"
-                          value={movimentacao.restricao.atual || 0}
-                          onChange={(e) =>
-                            atualizarMovimentacaoRestricao(
-                              "atual",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-8 px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none"
-                          min="0"
-                        />
-                        <span className="text-xs">/</span>
-                        <span className="w-8 px-1 py-0.5 text-xs text-center font-medium">
-                          {Math.floor(
-                            (atributos.DES.base +
-                              atributos.DES.ancestral +
-                              (pontosAtributoAncestralidade.DES || 0) +
-                              atributos.DES.bonus) /
-                              2
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <input
-                        type="number"
-                        value={movimentacao.mitigadoRestricao || 0}
-                        onChange={(e) =>
-                          atualizarMovimentacao(
-                            "mitigadoRestricao",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
-                        disabled={fichaTrancada}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Linha Evasão */}
-                  <div className="grid grid-cols-3">
-                    <div className="p-2 text-xs font-medium text-gray-700 border-r border-gray-200">
-                      Evasão
-                    </div>
-                    <div className="p-2 border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="number"
-                          value={movimentacao.evasao.atual || 0}
-                          onChange={(e) =>
-                            atualizarMovimentacaoEvasao(
-                              "atual",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-8 px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none"
-                          min="0"
-                        />
-                        <span className="text-xs">/</span>
-                        <span className="w-8 px-1 py-0.5 text-xs text-center font-medium">
-                          {Math.floor(
-                            (atributos.VEL.base +
-                              atributos.VEL.ancestral +
-                              (pontosAtributoAncestralidade.VEL || 0) +
-                              atributos.VEL.bonus) /
-                              2
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <input
-                        type="number"
-                        value={movimentacao.mitigadoEvasao || 0}
-                        onChange={(e) =>
-                          atualizarMovimentacao(
-                            "mitigadoEvasao",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-1 py-0.5 border border-gray-300 rounded text-xs text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
-                        disabled={fichaTrancada}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Seção de Ancestralidades — componente isolado com React.memo */}
+                        {/* Seção de Ancestralidades — componente isolado com React.memo */}
             <AncestralSection
               ancestralidades={ancestralidades}
               ancestralidadesConfirmadas={ancestralidadesConfirmadas}
