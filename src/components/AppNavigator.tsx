@@ -2,6 +2,7 @@
 // AppNavigator
 import React, { useState, useRef } from "react";
 import { Package, Download, Upload, Plus } from "./icons";
+import { Package, Download, Upload, Plus } from "./icons";
 
 // Import das páginas
 import FichaCJphant from "../FichaCJphant";
