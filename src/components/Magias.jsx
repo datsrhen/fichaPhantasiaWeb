@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // Magias.jsx
+=======
+// magias.js - MODIFICADO COM RECURSOS E TRAUMAS NO CABEÇALHO
+>>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
 import React, { useState, useRef, useEffect } from "react";
 import { useFicha } from "../context/useFicha";
 import { LockToggleButton, HeaderRecursos } from "./ui-components"; // NOVO: HeaderRecursos importado

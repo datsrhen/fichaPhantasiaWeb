@@ -3,7 +3,10 @@
 import React, { memo } from "react";
 import { LockToggleButton } from "./ui-components";
 import { useDebouncedField } from "../util/useDebounce";
+<<<<<<< HEAD
 import ModalAnotacoes from "./ModalAnotacoes";
+=======
+>>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
 
 const RecursoField = ({ label, value, onChangeCurrent, onChangeMax }) => (
   <div className="flex-1">
@@ -39,7 +42,12 @@ const IdentidadeSection = memo(({
   onFecharModal,
   onTrancaFicha,
   onAtualizarDescricao,
+<<<<<<< HEAD
   onAtualizarRecursos
+=======
+  onAtualizarRecursos,
+  ModalAnotacoes,
+>>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
 }) => {
   if (!descricao || typeof descricao !== "object") {
     console.warn("[IdentidadeSection] descricao inválido:", descricao);
