@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ui-components.js
 =======
 // ui-components.js - COMPLETAMENTE MODIFICADO COM NOVOS COMPONENTES
 >>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
+=======
+// ui-components.js
+>>>>>>> b26b847 (build ready)
 import { ChevronDown, ChevronUp, Lock, Unlock, Plus, Check, Trash2, AlertCircle, CheckCircle2, Edit3, Hammer } from "./icons";
 import React from "react";
 

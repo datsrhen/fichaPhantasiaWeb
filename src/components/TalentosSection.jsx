@@ -1,4 +1,8 @@
 // TalentosSection.jsx
+<<<<<<< HEAD
+=======
+// 463 itens em 5 categorias — accordion fecha/abre para controlar o que é montado.
+>>>>>>> b26b847 (build ready)
 import React, { memo, useCallback } from "react";
 import { useVirtualList } from "../util/useVirtualList";
 import {

@@ -7,11 +7,7 @@ import { Package, Download, Upload, Plus } from "./icons";
 import FichaCJphant from "../FichaCJphant";
 import Equipamentos from "./Equipamentos";
 import Magias from "./Magias";
-<<<<<<< HEAD
 import Criacao from "./Criacao";
-=======
-import Criacao from "../util/criacao";
->>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
 
 // Import do contexto
 import { FichaProvider } from "../context/FichaContext";

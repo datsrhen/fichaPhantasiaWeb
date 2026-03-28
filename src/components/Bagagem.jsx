@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Bagagem.jsx
 =======
 // Bagagem.js
 >>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
+=======
+// Bagagem.jsx
+>>>>>>> b26b847 (build ready)
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, X, Sword, AlertCircle, CheckCircle2 } from "./icons";
 

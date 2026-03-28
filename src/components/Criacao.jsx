@@ -1,13 +1,17 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Criacao.jsx
 =======
 // Criacao.js
 >>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
+=======
+// Criacao.jsx
+>>>>>>> b26b847 (build ready)
 import React, { useMemo, useState, useRef } from "react";
 import { useFicha } from "../context/useFicha";
 import { talentos as dadosTalento } from "../data/talentos";
-import { nivelMaestria } from "./constants";
-import { calcularBonusHabilidade } from "./calculations";
+import { nivelMaestria } from "../util/constants";
+import { calcularBonusHabilidade } from "../util/calculations";
 import {
   LockToggleButton,
   SectionHeader,
