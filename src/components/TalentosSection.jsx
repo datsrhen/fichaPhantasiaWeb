@@ -1,6 +1,4 @@
 // TalentosSection.jsx
-// Extraído de FichaCJphant.tsx — isolado para que mudanças em talentos
-// não rerenderizem o componente pai inteiro.
 // 463 itens em 5 categorias — accordion fecha/abre para controlar o que é montado.
 import React, { memo, useCallback } from "react";
 import {

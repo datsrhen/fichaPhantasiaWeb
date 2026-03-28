@@ -1,6 +1,4 @@
 // AncestralSection.jsx
-// Extraído de FichaCJphant.tsx — isolado para que mudanças em ancestralidades
-// não rerenderizem o componente pai inteiro.
 import React, { memo } from "react";
 import {
   AccordionSection,

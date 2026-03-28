@@ -1,6 +1,4 @@
 // HabilidadesSection.jsx
-// Extraído de FichaCJphant.tsx — isolado para que mudanças em habilidades
-// não rerenderizem o componente pai inteiro.
 import React, { memo } from "react";
 import { Check, Trash2 } from "./icons";
 import {

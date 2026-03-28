@@ -1,9 +1,9 @@
-// Criacao.js
+// Criacao.jsx
 import React, { useMemo, useState, useRef } from "react";
 import { useFicha } from "../context/useFicha";
 import { talentos as dadosTalento } from "../data/talentos";
-import { nivelMaestria } from "./constants";
-import { calcularBonusHabilidade } from "./calculations";
+import { nivelMaestria } from "../util/constants";
+import { calcularBonusHabilidade } from "../util/calculations";
 import {
   LockToggleButton,
   SectionHeader,

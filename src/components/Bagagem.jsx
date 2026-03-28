@@ -1,4 +1,4 @@
-// Bagagem.js
+// Bagagem.jsx
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, X, Sword, AlertCircle, CheckCircle2 } from "./icons";
 

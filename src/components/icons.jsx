@@ -1,5 +1,4 @@
 // icons.jsx
-// Ícones locais em SVG — substitui lucide-react.
 // Paths extraídos do Lucide Icons v0.x (ISC License).
 // viewBox padrão: "0 0 24 24", stroke-width: 2, stroke-linecap/linejoin: round.
 // Uso: <AlertCircle size={20} className="text-blue-600" />

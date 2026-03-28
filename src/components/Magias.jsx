@@ -1,4 +1,4 @@
-// magias.js - MODIFICADO COM RECURSOS E TRAUMAS NO CABEÇALHO
+// Magias.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useFicha } from "../context/useFicha";
 import { LockToggleButton, HeaderRecursos } from "./ui-components"; // NOVO: HeaderRecursos importado

@@ -7,7 +7,7 @@ import { Package, Download, Upload, Plus } from "./icons";
 import FichaCJphant from "../FichaCJphant";
 import Equipamentos from "./Equipamentos";
 import Magias from "./Magias";
-import Criacao from "../util/criacao";
+import Criacao from "./Criacao";
 
 // Import do contexto
 import { FichaProvider } from "../context/FichaContext";

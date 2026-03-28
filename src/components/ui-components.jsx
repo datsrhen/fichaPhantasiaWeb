@@ -1,4 +1,4 @@
-// ui-components.js - COMPLETAMENTE MODIFICADO COM NOVOS COMPONENTES
+// ui-components.js
 import { ChevronDown, ChevronUp, Lock, Unlock, Plus, Check, Trash2, AlertCircle, CheckCircle2, Edit3, Hammer } from "./icons";
 import React from "react";
 

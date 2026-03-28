@@ -1,5 +1,5 @@
 // IdentidadeSection.jsx
-// Estado debounced de aparencia e historia vive aqui — não no pai.
+// Estado debounced de aparencia e historia
 import React, { memo } from "react";
 import { LockToggleButton } from "./ui-components";
 import { useDebouncedField } from "../util/useDebounce";

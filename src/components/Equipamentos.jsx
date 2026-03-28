@@ -1,6 +1,6 @@
-// equipamentos.js
+// Equipamentos.jsx
 import React from "react";
-import Bagagem from "./bagagem";
+import Bagagem from "./Bagagem";
 
 const Equipamentos = ({ atributos, fichaTrancada }) => {
   return (
