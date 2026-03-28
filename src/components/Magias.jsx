@@ -1,17 +1,10 @@
-// magias.js
+// magias.js - MODIFICADO COM RECURSOS E TRAUMAS NO CABEÇALHO
 import React, { useState, useRef, useEffect } from "react";
 import { useFicha } from "../context/useFicha";
 import { LockToggleButton, HeaderRecursos } from "./ui-components"; // NOVO: HeaderRecursos importado
 import { talentos as dadosTalento } from "../data/talentos";
 import { nivelMaestria } from "../util/constants";
-import {
-  Plus,
-  Trash2,
-  Search,
-  CheckCircle2,
-  Sparkles,
-  Book,
-} from "lucide-react";
+import { Plus, Trash2, Search, CheckCircle2, Sparkles, Book } from "./icons";
 
 // NOVA IMPORTACAO - dados das magias do arquivo separado
 import { magiasEspirituais } from "../data/magias-espirituais";

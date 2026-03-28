@@ -1,16 +1,16 @@
-// criacao.js - MODIFICADO COM TRAUMAS NO CABEÇALHO
+// Criacao.js
 import React, { useMemo, useState, useRef } from "react";
 import { useFicha } from "../context/useFicha";
 import { talentos as dadosTalento } from "../data/talentos";
-import { nivelMaestria } from "../util/constants";
-import { calcularBonusHabilidade } from "../util/calculations";
+import { nivelMaestria } from "./constants";
+import { calcularBonusHabilidade } from "./calculations";
 import {
   LockToggleButton,
   SectionHeader,
   ViewCard,
   HeaderRecursos,
-} from "../components/ui-components";
-import { Plus, Trash2, CheckCircle2 } from "lucide-react";
+} from "./ui-components";
+import { Plus, Trash2, CheckCircle2 } from "./icons";
 
 const Criacao = () => {
   const {

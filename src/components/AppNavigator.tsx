@@ -1,13 +1,13 @@
 // @ts-nocheck
 // AppNavigator
 import React, { useState, useRef } from "react";
-import { Package, Download, Upload, Plus } from "lucide-react";
+import { Package, Download, Upload, Plus } from "./icons";
 
 // Import das páginas
 import FichaCJphant from "../FichaCJphant";
-import Equipamentos from "./equipamentos";
-import Magias from "./magias";
-import Criacao from "./criacao";
+import Equipamentos from "./Equipamentos";
+import Magias from "./Magias";
+import Criacao from "../util/criacao";
 
 // Import do contexto
 import { FichaProvider } from "../context/FichaContext";

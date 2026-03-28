@@ -2,7 +2,7 @@
 // Extraído de FichaCJphant.tsx — isolado para que mudanças em origens
 // não rerenderizem o componente pai inteiro.
 import React, { memo, useMemo } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle } from "./icons";
 import {
   SectionHeader,
   AccordionSection,

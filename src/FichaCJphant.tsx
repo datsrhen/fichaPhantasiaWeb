@@ -2,14 +2,8 @@
 // FichaCJphant.js
 import React, { useState, useEffect, memo } from "react";
 import {
-  AlertCircle,
-  Plus,
-  Lock,
-  Unlock,
-  ChevronDown,
-  ChevronUp,
-  Edit3,
-} from "lucide-react";
+  AlertCircle, Plus, Lock, Unlock, ChevronDown, ChevronUp, Edit3,
+} from "./components/icons";
 // Dados estáticos pré-processados — não dependem de estado nem de efeitos
 import {
   ancestralidadesProcessadas,
@@ -46,7 +40,6 @@ import {
   ViewCard,
   SectionHeader,
   ModeIndicator,
-  LockToggleButton,
   RecursoField,
   TraumaField,
 } from "./components/ui-components";
@@ -58,6 +51,7 @@ import AncestralSection from "./components/AncestralSection";
 import OrigensSection from "./components/OrigensSection";
 import AtributosSection from "./components/AtributosSection";
 import MovimentacaoSection from "./components/MovimentacaoSection";
+import IdentidadeSection from "./components/IdentidadeSection";
 import { useDebouncedField } from "./util/useDebounce";
 
 function anexarEntradaComData(historicoAnterior, textoNovo) {
@@ -447,9 +441,9 @@ const FichaCJphant = () => {
     actions.updateHabilidades(novasHabilidades);
   }, [habilidades, actions]);
 
-  const alternarTrancaFicha = () => {
+  const alternarTrancaFicha = React.useCallback(() => {
     actions.setFichaTrancada(!fichaTrancada);
-  };
+  }, [actions, fichaTrancada]);
 
   // Funções para ancestralidades - MODIFICADA COM DEBUG
   const toggleAncestralidade = React.useCallback((nome) => {
@@ -575,26 +569,13 @@ const FichaCJphant = () => {
 
   // Função auxiliar para renderizar campo condicional
   // Funções para atualizar descrição
-  const atualizarDescricao = (campo, valor) => {
+  const atualizarDescricao = React.useCallback((campo, valor) => {
     actions.updateDescricao({ [campo]: valor });
-  };
+  }, [actions]);
 
-  // Campos longos — estado local com sync debounced (400ms)
-  // Evita dispatch global a cada tecla em textareas
-  const { localValue: aparenciaLocal, handleChange: handleAparenciaChange } =
-    useDebouncedField(descricao.aparencia, (v) =>
-      atualizarDescricao("aparencia", v)
-    );
-
-  const { localValue: historiaLocal, handleChange: handleHistoriaChange } =
-    useDebouncedField(descricao.historia, (v) =>
-      atualizarDescricao("historia", v)
-    );
-
-  // NOVAS FUNÇÕES: Atualizar recursos
-  const atualizarRecursos = (novosRecursos) => {
+  const atualizarRecursos = React.useCallback((novosRecursos) => {
     actions.updateRecursos(novosRecursos);
-  };
+  }, [actions]);
 
   const historicoDaSecao =
     normalizarAnotacaoComoString(state.anotacoes?.[secaoIdAtiva]);
@@ -602,353 +583,21 @@ const FichaCJphant = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Cabeçalho */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Ficha de Personagem - Phantasia
-            </h1>
-            
-              <ModalAnotacoes
-                isOpen={isAnotacoesOpen}
-                secaoId={secaoIdAtiva}
-                tituloSecao={secaoIdAtiva}
-                textoInicial={historicoDaSecao}
-                atualizadoEm={formatarDataPtBr(historicoDaSecao.atualizadoEm)}
-                onSave={handleSalvarAnotacoes}
-                onClose={handleFecharModal}
-              />
-            <LockToggleButton
-              isLocked={fichaTrancada}
-              onToggle={alternarTrancaFicha}
-            />
-          </div>
-          {/* CAMPOS DE DESCRIÇÃO - MODIFICADO COM NOVO LAYOUT DE RECURSOS */}
-          <div className="mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
-            {/* Coluna 1-2: Nome e Idade lado a lado + Convicção e Vício */}
-            <div className="lg:col-span-2">
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                {/* Campo Nome - MAIOR */}
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Nome
-                  </label>
-                  <input
-                    type="text"
-                    value={descricao.nome}
-                    onChange={(e) => atualizarDescricao("nome", e.target.value)}
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="Nome do personagem"
-                  />
-                </div>
-
-                {/* Campo Idade - MENOR */}
-                <div className="col-span-1">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Idade
-                  </label>
-                  <input
-                    type="text"
-                    value={descricao.idade}
-                    onChange={(e) =>
-                      atualizarDescricao("idade", e.target.value)
-                    }
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="Idade"
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-
-              {/* Convicção e Vício empilhados abaixo */}
-              <div className="space-y-4">
-                {/* Campo Convicção */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Convicção
-                  </label>
-                  <input
-                    type="text"
-                    value={descricao.conviccao}
-                    onChange={(e) =>
-                      atualizarDescricao("conviccao", e.target.value)
-                    }
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="Crenças e princípios"
-                  />
-                </div>
-
-                {/* Campo Vício */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Vício
-                  </label>
-                  <input
-                    type="text"
-                    value={descricao.vicio}
-                    onChange={(e) =>
-                      atualizarDescricao("vicio", e.target.value)
-                    }
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="Vícios e fraquezas"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Coluna 3-5: Aparência e História lado a lado + NOVA CAIXA DE RECURSOS abaixo */}
-            <div className="lg:col-span-3">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {/* Campo Aparência */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Aparência
-                  </label>
-                  <textarea
-                    value={aparenciaLocal}
-                    onChange={handleAparenciaChange}
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
-                    placeholder="Descrição física"
-                    rows="3"
-                  />
-                </div>
-
-                {/* Campo História */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    História
-                  </label>
-                  <textarea
-                    value={historiaLocal}
-                    onChange={handleHistoriaChange}
-                    disabled={fichaTrancada}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
-                    placeholder="Antecedentes e história"
-                    rows="3"
-                  />
-                </div>
-              </div>
-
-              {/* NOVA CAIXA DE RECURSOS VERMELHA - TODOS OS CAMPOS JUNTOS (SEMPRE EDITÁVEIS) */}
-              <div className="border-2 border-red-300 bg-red-50 rounded-lg p-3">
-                {/* Linha superior: PFs, PEs, PCs, DD lado a lado */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  {/* PFs */}
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-red-700 mb-1">
-                      PFs
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={recursos.pfs.current || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pfs: {
-                              ...recursos.pfs,
-                              current: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                      <span className="font-bold">/</span>
-                      <input
-                        type="number"
-                        value={recursos.pfs.max || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pfs: {
-                              ...recursos.pfs,
-                              max: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* PEs */}
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-red-700 mb-1">
-                      PEs
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={recursos.pes.current || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pes: {
-                              ...recursos.pes,
-                              current: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                      <span className="font-bold">/</span>
-                      <input
-                        type="number"
-                        value={recursos.pes.max || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pes: {
-                              ...recursos.pes,
-                              max: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* PCs */}
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-red-700 mb-1">
-                      PCs
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={recursos.pcs.current || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pcs: {
-                              ...recursos.pcs,
-                              current: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                      <span className="font-bold">/</span>
-                      <input
-                        type="number"
-                        value={recursos.pcs.max || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            pcs: {
-                              ...recursos.pcs,
-                              max: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* NOVO CAMPO: DD */}
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-red-700 mb-1">
-                      DD
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={recursos.dd?.current || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            dd: {
-                              ...recursos.dd,
-                              current: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                      <span className="font-bold">/</span>
-                      <input
-                        type="number"
-                        value={recursos.dd?.max || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            dd: {
-                              ...recursos.dd,
-                              max: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-10 px-1 py-0.5 border border-gray-300 rounded text-sm text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Linha inferior: Traumas */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-red-700">
-                      Traumas
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={recursos.traumas.current || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            traumas: {
-                              ...recursos.traumas,
-                              current: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-8 px-1 py-0.5 border border-gray-300 rounded text-xs text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                      <span className="font-bold text-xs">/</span>
-                      <input
-                        type="number"
-                        value={recursos.traumas.max || 0}
-                        onChange={(e) =>
-                          atualizarRecursos({
-                            traumas: {
-                              ...recursos.traumas,
-                              max: parseInt(e.target.value) || 0,
-                            },
-                          })
-                        }
-                        className="w-8 px-1 py-0.5 border border-gray-300 rounded text-xs text-center font-bold focus:outline-none focus:border-gray-400"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                  <textarea
-                    value={recursos.traumas.description || ""}
-                    onChange={(e) =>
-                      atualizarRecursos({
-                        traumas: {
-                          ...recursos.traumas,
-                          description: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="Descrição dos traumas..."
-                    className="w-full h-16 px-2 py-1 border border-gray-300 rounded text-xs focus:border-red-500 focus:outline-none resize-none overflow-y-auto"
-                    rows="2"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        {/* Identidade — componente isolado com React.memo */}
+        <IdentidadeSection
+          descricao={descricao}
+          recursos={recursos}
+          fichaTrancada={fichaTrancada}
+          isAnotacoesOpen={isAnotacoesOpen}
+          secaoIdAtiva={secaoIdAtiva}
+          historicoDaSecao={historicoDaSecao}
+          onSalvarAnotacoes={handleSalvarAnotacoes}
+          onFecharModal={handleFecharModal}
+          onTrancaFicha={alternarTrancaFicha}
+          onAtualizarDescricao={atualizarDescricao}
+          onAtualizarRecursos={atualizarRecursos}
+          ModalAnotacoes={ModalAnotacoes}
+        />
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Coluna Esquerda - Largura independente para cada caixa */}
           <div className="flex flex-col gap-6">
