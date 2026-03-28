@@ -1,7 +1,6 @@
-// bagagem.js
+// Bagagem.js
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Search, X, Sword } from "lucide-react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Search, X, Sword, AlertCircle, CheckCircle2 } from "./icons";
 
 // Importando dados das planilhas
 import { armas as dadosArmas } from "../data/armas";

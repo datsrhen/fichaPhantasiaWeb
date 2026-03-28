@@ -1,18 +1,6 @@
 // ui-components.js - COMPLETAMENTE MODIFICADO COM NOVOS COMPONENTES
+import { ChevronDown, ChevronUp, Lock, Unlock, Plus, Check, Trash2, AlertCircle, CheckCircle2, Edit3, Hammer } from "./icons";
 import React from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  Lock,
-  Unlock,
-  Plus,
-  Check,
-  Trash2,
-  AlertCircle,
-  CheckCircle2,
-  Edit3,
-  Hammer,
-} from "lucide-react";
 
 // Componente de botão de incremento/decremento
 export const IncrementDecrementButton = ({
