@@ -3,6 +3,7 @@
 import React, { memo } from "react";
 import { LockToggleButton } from "./ui-components";
 import { useDebouncedField } from "../util/useDebounce";
+import ModalAnotacoes from "./ModalAnotacoes";
 
 const RecursoField = ({ label, value, onChangeCurrent, onChangeMax }) => (
   <div className="flex-1">
@@ -38,8 +39,7 @@ const IdentidadeSection = memo(({
   onFecharModal,
   onTrancaFicha,
   onAtualizarDescricao,
-  onAtualizarRecursos,
-  ModalAnotacoes,
+  onAtualizarRecursos
 }) => {
   if (!descricao || typeof descricao !== "object") {
     console.warn("[IdentidadeSection] descricao inválido:", descricao);
