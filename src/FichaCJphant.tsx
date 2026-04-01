@@ -54,17 +54,7 @@ import MovimentacaoSection from "./components/MovimentacaoSection";
 import IdentidadeSection from "./components/IdentidadeSection";
 import { useDebouncedField } from "./util/useDebounce";
 
-function anexarEntradaComData(historicoAnterior, textoNovo) {
-  const textoLimpo = (textoNovo ?? "").trim();
 
-  // Se não escreveu nada, não altera o histórico
-  if (!textoLimpo) return historicoAnterior ?? "";
-
-  const carimbo = formatarDataPtBr(new Date().toISOString());
-  const entrada = `${carimbo}: ${textoLimpo}\n\n`;
-
-  return `${historicoAnterior ?? ""}${entrada}`;
-}
 function normalizarAnotacaoComoString(valor) {
   if (!valor) return "";
   if (typeof valor === "string") return valor;
@@ -105,9 +95,6 @@ const FichaCJphant = () => {
   // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
   const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
 
-  // Estados para Anotações
-  const [historico, setHistorico] = useState("");
-  const [novaEntrada, setNovaEntrada] = useState("");  
 
   function abrirAnotacoes(secaoId) {
      //console.log("ABRINDO", secaoId, state.anotacoes?.[secaoId])
@@ -120,16 +107,6 @@ const FichaCJphant = () => {
   function handleSalvarAnotacoes(secaoId, historicoCompleto) {
     actions.updateAnotacoes({ [secaoId]: historicoCompleto });
     //console.log("SALVANDO", secaoId, historicoCompleto);
-  }
-
-  function formatarDataPtBr(isoString) {
-    if (!isoString) return "";
-    const agora = new Date(isoString);
-
-    return agora.toLocaleString("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
   }
 
   function handleFecharModal() {
@@ -596,7 +573,6 @@ const FichaCJphant = () => {
           onTrancaFicha={alternarTrancaFicha}
           onAtualizarDescricao={atualizarDescricao}
           onAtualizarRecursos={atualizarRecursos}
-          ModalAnotacoes={ModalAnotacoes}
         />
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Coluna Esquerda - Largura independente para cada caixa */}
@@ -706,101 +682,4 @@ const FichaCJphant = () => {
     </div>
   );
 }
-const ModalAnotacoes = memo(function ModalAnotacoes({
-    isOpen,
-    secaoId,
-    tituloSecao,
-    textoInicial,
-    onSave,
-    onClose,
-  }) {
-  const [textoRascunho, setTextoRascunho] = useState("");
-  const [historico, setHistorico] = useState("");
-  const [novaEntrada, setNovaEntrada] = useState("");
-    
-    // Sempre que abrir (ou mudar de seção), carrega o texto inicial no rascunho
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setHistorico(textoInicial ?? "");
-    setNovaEntrada("");
-  }, [isOpen, secaoId, textoInicial]);
-
-    // Se não estiver aberto, não renderiza nada
-    if (!isOpen) return null;
-    
-  function handleSalvarEFechar() {
-    if (!secaoId) return;
-
-    const historicoAtualizado = anexarEntradaComData(historico, novaEntrada);
-
-    // Atualiza o histórico exibido na tela também (fica consistente)
-    setHistorico(historicoAtualizado);
-    setNovaEntrada("");
-
-    // Persistência: salva a string histórica inteira
-    onSave(secaoId, historicoAtualizado);
-
-    onClose();
-  }    
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Overlay fecha */}
-        <button
-          type="button"
-          className="absolute inset-0 bg-black/50"
-          onClick={onClose}
-          aria-label="Fechar anotações"
-        />
-
-        {/* Card */}
-        <div
-          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl text-gray-800"
-          onClick={(evento) => evento.stopPropagation()}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Anotações{tituloSecao ? ` — ${tituloSecao}` : ""}
-            </h3>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
-                onClick={(evento) => {
-                  evento.stopPropagation();
-                  onClose();
-                }}
-              >
-                Fechar
-              </button>
-
-              <button
-                type="button"
-                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
-                onClick={(evento) => {
-                  evento.stopPropagation();
-                  handleSalvarEFechar();
-                }}
-              >
-                Salvar
-              </button>
-            </div>
-          </div>
-          <textarea
-            className="mt-3 w-full min-h-[160px] rounded-xl border border-gray-300 p-3 text-sm outline-none bg-gray-50"
-            value={historico}
-            readOnly
-          />
-          <textarea
-            className="mt-3 w-full min-h-[90px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
-            placeholder="Nova anotação..."
-            value={novaEntrada}
-            onChange={(evento) => setNovaEntrada(evento.target.value)}
-            autoFocus
-          />
-        </div>
-      </div>
-    );
-});
 export default FichaCJphant;
