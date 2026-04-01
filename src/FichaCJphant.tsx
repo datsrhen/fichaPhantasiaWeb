@@ -33,15 +33,12 @@ import {
   obterOrigensSelecionadas,
 } from "./util/calculations";
 import {
-  IncrementDecrementButton,
   ConfirmButton,
   IconButton,
   AccordionSection,
   SelectableCard,
   ViewCard,
-  StatusPanel,
   SectionHeader,
-  BonusInput,
   ModeIndicator,
   RecursoField,
   TraumaField,
@@ -57,17 +54,7 @@ import MovimentacaoSection from "./components/MovimentacaoSection";
 import IdentidadeSection from "./components/IdentidadeSection";
 import { useDebouncedField } from "./util/useDebounce";
 
-function anexarEntradaComData(historicoAnterior, textoNovo) {
-  const textoLimpo = (textoNovo ?? "").trim();
 
-  // Se não escreveu nada, não altera o histórico
-  if (!textoLimpo) return historicoAnterior ?? "";
-
-  const carimbo = formatarDataPtBr(new Date().toISOString());
-  const entrada = `${carimbo}: ${textoLimpo}\n\n`;
-
-  return `${historicoAnterior ?? ""}${entrada}`;
-}
 function normalizarAnotacaoComoString(valor) {
   if (!valor) return "";
   if (typeof valor === "string") return valor;
@@ -108,9 +95,6 @@ const FichaCJphant = () => {
   // Guarda qual seção está com o modal aberto (ex: "talentos", "magias"...)
   const [secaoIdAtiva, setSecaoIdAtiva] = useState(null);
 
-  // Estados para Anotações
-  const [historico, setHistorico] = useState("");
-  const [novaEntrada, setNovaEntrada] = useState("");  
 
   function abrirAnotacoes(secaoId) {
      //console.log("ABRINDO", secaoId, state.anotacoes?.[secaoId])
@@ -123,16 +107,6 @@ const FichaCJphant = () => {
   function handleSalvarAnotacoes(secaoId, historicoCompleto) {
     actions.updateAnotacoes({ [secaoId]: historicoCompleto });
     //console.log("SALVANDO", secaoId, historicoCompleto);
-  }
-
-  function formatarDataPtBr(isoString) {
-    if (!isoString) return "";
-    const agora = new Date(isoString);
-
-    return agora.toLocaleString("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
   }
 
   function handleFecharModal() {
@@ -309,139 +283,73 @@ const FichaCJphant = () => {
     actions.updateAtributos(novosAtributos);
   };
 
-  const incrementar = (atributo) => {
+  const incrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && pontosRestantes > 0) {
       alterarAtributo(atributo, atributos[atributo].base + 1);
     }
-  };
+  }, [atributosTrancados, pontosRestantes, atributos, alterarAtributo]);
 
-  const decrementar = (atributo) => {
+  const decrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && atributos[atributo].base > VALOR_MINIMO) {
       alterarAtributo(atributo, atributos[atributo].base - 1);
     }
-  };
+  }, [atributosTrancados, atributos, alterarAtributo]);
 
   // Funções para pontos de ancestralidade nos atributos
-  const incrementarAncestral = (atributo) => {
-    if (
-      editandoAncestralAtributos &&
-      pontosAncestralRestantesParaDistribuir > 0
-    ) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral + 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+  const incrementarAncestral = React.useCallback((atributo) => {
+    if (editandoAncestralAtributos && pontosAncestralRestantesParaDistribuir > 0) {
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral + 1 } });
     }
-  };
+  }, [editandoAncestralAtributos, pontosAncestralRestantesParaDistribuir, atributos, actions]);
 
-  const decrementarAncestral = (atributo) => {
+  const decrementarAncestral = React.useCallback((atributo) => {
     if (editandoAncestralAtributos && atributos[atributo].ancestral > 0) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral - 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral - 1 } });
     }
-  };
+  }, [editandoAncestralAtributos, atributos, actions]);
 
   // Funções para pontos de atributo de ancestralidade
-  const incrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      pontosAtributoAncestralidadeRestantes > 0 &&
-      atributosPermitidos.includes(atributo)
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  const incrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && pontosAtributoAncestralidadeRestantes > 0 && atributosPermitidos.includes(atributo)) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1 } });
     }
-  };
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidadeRestantes, atributosPermitidos, pontosAtributoAncestralidade, actions]);
 
-  const decrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      (pontosAtributoAncestralidade[atributo] || 0) > 0
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  const decrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && (pontosAtributoAncestralidade[atributo] || 0) > 0) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1 } });
     }
-  };
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidade, actions]);
 
-  // Funções para bônus (sempre editáveis) - MODIFICADAS para permitir valores negativos
-  const incrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus + 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const incrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus + 1 } });
+  }, [atributos, actions]);
 
-  const decrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus - 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const decrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus - 1 } });
+  }, [atributos, actions]);
 
-  const alterarBonus = (atributo, valor) => {
-    const novoValor = parseInt(valor) || 0;
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: novoValor,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const alterarBonus = React.useCallback((atributo, valor) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: parseInt(valor) || 0 } });
+  }, [atributos, actions]);
 
-  // NOVAS FUNÇÕES: Atualizar movimentação
-  const atualizarMovimentacao = (campo, valor) => {
+  const atualizarMovimentacao = React.useCallback((campo, valor) => {
     actions.updateMovimentacao({ [campo]: valor });
-  };
+  }, [actions]);
 
-  const atualizarMovimentacaoChoque = (campo, valor) => {
-    actions.updateMovimentacao({
-      choque: { ...movimentacao.choque, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoChoque = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ choque: { ...movimentacao.choque, [campo]: valor } });
+  }, [actions, movimentacao.choque]);
 
-  const atualizarMovimentacaoRestricao = (campo, valor) => {
-    actions.updateMovimentacao({
-      restricao: { ...movimentacao.restricao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoRestricao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ restricao: { ...movimentacao.restricao, [campo]: valor } });
+  }, [actions, movimentacao.restricao]);
 
-  const atualizarMovimentacaoEvasao = (campo, valor) => {
-    actions.updateMovimentacao({
-      evasao: { ...movimentacao.evasao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoEvasao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ evasao: { ...movimentacao.evasao, [campo]: valor } });
+  }, [actions, movimentacao.evasao]);
 
-  const resetar = () => {
+  const resetar = React.useCallback(() => {
     if (!atributosTrancados) {
       actions.updateAtributos({
         INT: { base: 1, ancestral: 0, bonus: 0 },
@@ -453,13 +361,13 @@ const FichaCJphant = () => {
         ESP: { base: 1, ancestral: 0, bonus: 0 },
       });
     }
-  };
+  }, [atributosTrancados, actions]);
 
-  const trancarAtributos = () => {
+  const trancarAtributos = React.useCallback(() => {
     if (pontosRestantes === 0) {
       actions.setAtributosTrancados(true);
     }
-  };
+  }, [pontosRestantes, actions]);
 
   const adicionarHabilidade = React.useCallback(() => {
     const novaHabilidade = {
@@ -556,26 +464,23 @@ const FichaCJphant = () => {
   }, [actions, caracteristicasSelecionadas]);
 
   // Funções para distribuição de pontos de ancestralidade nos atributos
-  const iniciarDistribuicaoAncestral = () => {
+  const iniciarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(true);
-  };
+  }, []);
 
-  const confirmarDistribuicaoAncestral = () => {
+  const confirmarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(false);
     actions.updateAncestralidades({ distribuicaoAncestralConfirmada: true });
-  };
+  }, [actions]);
 
-  // Funções para distribuição de pontos de atributo de ancestralidade
-  const iniciarDistribuicaoAtributoAncestralidade = () => {
+  const iniciarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(true);
-  };
+  }, []);
 
-  const confirmarDistribuicaoAtributoAncestralidade = () => {
+  const confirmarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(false);
-    actions.updateAncestralidades({
-      distribuicaoAtributoAncestralidadeConfirmada: true,
-    });
-  };
+    actions.updateAncestralidades({ distribuicaoAtributoAncestralidadeConfirmada: true });
+  }, [actions]);
 
 
   // Funções para Origens
@@ -668,7 +573,6 @@ const FichaCJphant = () => {
           onTrancaFicha={alternarTrancaFicha}
           onAtualizarDescricao={atualizarDescricao}
           onAtualizarRecursos={atualizarRecursos}
-          ModalAnotacoes={ModalAnotacoes}
         />
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Coluna Esquerda - Largura independente para cada caixa */}
@@ -719,7 +623,7 @@ const FichaCJphant = () => {
               onAtualizarEvasao={atualizarMovimentacaoEvasao}
             />
 
-            {/* Seção de Ancestralidades — componente isolado com React.memo */}
+                        {/* Seção de Ancestralidades — componente isolado com React.memo */}
             <AncestralSection
               ancestralidades={ancestralidades}
               ancestralidadesConfirmadas={ancestralidadesConfirmadas}
@@ -778,101 +682,4 @@ const FichaCJphant = () => {
     </div>
   );
 }
-const ModalAnotacoes = memo(function ModalAnotacoes({
-    isOpen,
-    secaoId,
-    tituloSecao,
-    textoInicial,
-    onSave,
-    onClose,
-  }) {
-  const [textoRascunho, setTextoRascunho] = useState("");
-  const [historico, setHistorico] = useState("");
-  const [novaEntrada, setNovaEntrada] = useState("");
-    
-    // Sempre que abrir (ou mudar de seção), carrega o texto inicial no rascunho
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setHistorico(textoInicial ?? "");
-    setNovaEntrada("");
-  }, [isOpen, secaoId, textoInicial]);
-
-    // Se não estiver aberto, não renderiza nada
-    if (!isOpen) return null;
-    
-  function handleSalvarEFechar() {
-    if (!secaoId) return;
-
-    const historicoAtualizado = anexarEntradaComData(historico, novaEntrada);
-
-    // Atualiza o histórico exibido na tela também (fica consistente)
-    setHistorico(historicoAtualizado);
-    setNovaEntrada("");
-
-    // Persistência: salva a string histórica inteira
-    onSave(secaoId, historicoAtualizado);
-
-    onClose();
-  }    
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Overlay fecha */}
-        <button
-          type="button"
-          className="absolute inset-0 bg-black/50"
-          onClick={onClose}
-          aria-label="Fechar anotações"
-        />
-
-        {/* Card */}
-        <div
-          className="relative z-10 w-[min(520px,92vw)] rounded-2xl bg-white p-4 shadow-xl text-gray-800"
-          onClick={(evento) => evento.stopPropagation()}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Anotações{tituloSecao ? ` — ${tituloSecao}` : ""}
-            </h3>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
-                onClick={(evento) => {
-                  evento.stopPropagation();
-                  onClose();
-                }}
-              >
-                Fechar
-              </button>
-
-              <button
-                type="button"
-                className="rounded-lg px-3 py-1 text-sm text-gray-800 font-medium hover:bg-gray-100"
-                onClick={(evento) => {
-                  evento.stopPropagation();
-                  handleSalvarEFechar();
-                }}
-              >
-                Salvar
-              </button>
-            </div>
-          </div>
-          <textarea
-            className="mt-3 w-full min-h-[160px] rounded-xl border border-gray-300 p-3 text-sm outline-none bg-gray-50"
-            value={historico}
-            readOnly
-          />
-          <textarea
-            className="mt-3 w-full min-h-[90px] rounded-xl border border-gray-300 p-3 text-sm outline-none"
-            placeholder="Nova anotação..."
-            value={novaEntrada}
-            onChange={(evento) => setNovaEntrada(evento.target.value)}
-            autoFocus
-          />
-        </div>
-      </div>
-    );
-});
 export default FichaCJphant;

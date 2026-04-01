@@ -1,6 +1,6 @@
 // TalentosSection.jsx
-// 463 itens em 5 categorias — accordion fecha/abre para controlar o que é montado.
 import React, { memo, useCallback } from "react";
+import { useVirtualList } from "../util/useVirtualList";
 import {
   SectionHeader,
   ModeIndicator,
@@ -167,14 +167,11 @@ const TalentosSection = memo(({
               isOpen={talentosAbertos[categoria.tipo]}
               onToggle={onToggleTalentos}
             >
-              {categoria.talentos.map((talento) => (
-                <TalentoCard
-                  key={talento.id}
-                  talento={talento}
-                  isSelected={talentosSelecionados[talento.id]}
-                  onToggle={onToggleTalento}
-                />
-              ))}
+              <VirtualizedTalentos
+                talentos={categoria.talentos}
+                talentosSelecionados={talentosSelecionados}
+                onToggle={onToggleTalento}
+              />
             </AccordionSection>
           ))
         )}
@@ -184,5 +181,64 @@ const TalentosSection = memo(({
 });
 
 TalentosSection.displayName = "TalentosSection";
+
+// Lista virtualizada de talentos dentro de um accordion aberto.
+// Renderiza apenas os cards visíveis — essencial para Magia Espiritual (213 itens).
+const CARD_HEIGHT = 130; // altura estimada por card (px) — ajustar se o layout mudar
+
+const VirtualizedTalentos = memo(({ talentos, talentosSelecionados, onToggle }) => {
+  if (!Array.isArray(talentos) || talentos.length === 0) return null;
+
+  // Para listas pequenas, não vale a pena virtualizar
+  if (talentos.length <= 20) {
+    return (
+      <>
+        {talentos.map((talento) => (
+          <TalentoCard
+            key={talento.id}
+            talento={talento}
+            isSelected={talentosSelecionados[talento.id]}
+            onToggle={onToggle}
+          />
+        ))}
+      </>
+    );
+  }
+
+  const { containerRef, handleScroll, virtualItems, totalHeight } =
+    useVirtualList(talentos, CARD_HEIGHT);
+
+  return (
+    <div
+      ref={containerRef}
+      onScroll={handleScroll}
+      style={{ height: "480px", overflowY: "auto", position: "relative" }}
+      aria-label={`Lista de ${talentos.length} talentos`}
+    >
+      {/* Espaçador que dá a altura total ao container */}
+      <div style={{ height: totalHeight, position: "relative" }}>
+        {virtualItems.map(({ index, item: talento, offsetTop }) => (
+          <div
+            key={talento.id}
+            style={{
+              position: "absolute",
+              top: offsetTop,
+              left: 0,
+              right: 0,
+            }}
+          >
+            <TalentoCard
+              talento={talento}
+              isSelected={talentosSelecionados[talento.id]}
+              onToggle={onToggle}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+VirtualizedTalentos.displayName = "VirtualizedTalentos";
 
 export default TalentosSection;
