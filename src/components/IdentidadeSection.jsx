@@ -1,12 +1,16 @@
 // IdentidadeSection.jsx
-// Estado debounced de aparencia e historia
+// Estado debounced de aparencia e historia vive aqui — não no pai.
 import React, { memo } from "react";
 import { LockToggleButton } from "./ui-components";
 import { useDebouncedField } from "../util/useDebounce";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import ModalAnotacoes from "./ModalAnotacoes";
 =======
 >>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
+=======
+import ModalAnotacoes from "./ModalAnotacoes";
+>>>>>>> 9e30cf8 (fix(modal): extract ModalAnotacoes — fix formatarDataPtBr undefined scope bug)
 
 const RecursoField = ({ label, value, onChangeCurrent, onChangeMax }) => (
   <div className="flex-1">
@@ -43,11 +47,15 @@ const IdentidadeSection = memo(({
   onTrancaFicha,
   onAtualizarDescricao,
 <<<<<<< HEAD
+<<<<<<< HEAD
   onAtualizarRecursos
 =======
   onAtualizarRecursos,
   ModalAnotacoes,
 >>>>>>> 52cabf2 (feat(icons): replace lucide-react with local SVG components)
+=======
+  onAtualizarRecursos
+>>>>>>> 9e30cf8 (fix(modal): extract ModalAnotacoes — fix formatarDataPtBr undefined scope bug)
 }) => {
   if (!descricao || typeof descricao !== "object") {
     console.warn("[IdentidadeSection] descricao inválido:", descricao);

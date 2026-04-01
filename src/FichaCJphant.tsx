@@ -33,18 +33,12 @@ import {
   obterOrigensSelecionadas,
 } from "./util/calculations";
 import {
-  IncrementDecrementButton,
-  IncrementDecrementButton,
   ConfirmButton,
   IconButton,
   AccordionSection,
   SelectableCard,
   ViewCard,
-  StatusPanel,
-  StatusPanel,
   SectionHeader,
-  BonusInput,
-  BonusInput,
   ModeIndicator,
   RecursoField,
   TraumaField,
@@ -289,251 +283,73 @@ const FichaCJphant = () => {
     actions.updateAtributos(novosAtributos);
   };
 
-  const incrementar = (atributo) => {
-  const incrementar = (atributo) => {
+  const incrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && pontosRestantes > 0) {
       alterarAtributo(atributo, atributos[atributo].base + 1);
     }
-  };
-  };
+  }, [atributosTrancados, pontosRestantes, atributos, alterarAtributo]);
 
-  const decrementar = (atributo) => {
-  const decrementar = (atributo) => {
+  const decrementar = React.useCallback((atributo) => {
     if (!atributosTrancados && atributos[atributo].base > VALOR_MINIMO) {
       alterarAtributo(atributo, atributos[atributo].base - 1);
     }
-  };
-  };
+  }, [atributosTrancados, atributos, alterarAtributo]);
 
   // Funções para pontos de ancestralidade nos atributos
-  const incrementarAncestral = (atributo) => {
-    if (
-      editandoAncestralAtributos &&
-      pontosAncestralRestantesParaDistribuir > 0
-    ) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral + 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+  const incrementarAncestral = React.useCallback((atributo) => {
+    if (editandoAncestralAtributos && pontosAncestralRestantesParaDistribuir > 0) {
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral + 1 } });
     }
-  };
-  const incrementarAncestral = (atributo) => {
-    if (
-      editandoAncestralAtributos &&
-      pontosAncestralRestantesParaDistribuir > 0
-    ) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral + 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
-    }
-  };
+  }, [editandoAncestralAtributos, pontosAncestralRestantesParaDistribuir, atributos, actions]);
 
-  const decrementarAncestral = (atributo) => {
-  const decrementarAncestral = (atributo) => {
+  const decrementarAncestral = React.useCallback((atributo) => {
     if (editandoAncestralAtributos && atributos[atributo].ancestral > 0) {
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral - 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
+      actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], ancestral: atributos[atributo].ancestral - 1 } });
     }
-  };
-      const novosAtributos = {
-        ...atributos,
-        [atributo]: {
-          ...atributos[atributo],
-          ancestral: atributos[atributo].ancestral - 1,
-        },
-      };
-      actions.updateAtributos(novosAtributos);
-    }
-  };
+  }, [editandoAncestralAtributos, atributos, actions]);
 
   // Funções para pontos de atributo de ancestralidade
-  const incrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      pontosAtributoAncestralidadeRestantes > 0 &&
-      atributosPermitidos.includes(atributo)
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  const incrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && pontosAtributoAncestralidadeRestantes > 0 && atributosPermitidos.includes(atributo)) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1 } });
     }
-  };
-  const incrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      pontosAtributoAncestralidadeRestantes > 0 &&
-      atributosPermitidos.includes(atributo)
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) + 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidadeRestantes, atributosPermitidos, pontosAtributoAncestralidade, actions]);
+
+  const decrementarAtributoAncestralidade = React.useCallback((atributo) => {
+    if (editandoPontosAtributoAncestralidade && (pontosAtributoAncestralidade[atributo] || 0) > 0) {
+      actions.updateAncestralidades({ pontosAtributoAncestralidade: { ...pontosAtributoAncestralidade, [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1 } });
     }
-  };
+  }, [editandoPontosAtributoAncestralidade, pontosAtributoAncestralidade, actions]);
 
-  const decrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      (pontosAtributoAncestralidade[atributo] || 0) > 0
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
-    }
-  };
+  const incrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus + 1 } });
+  }, [atributos, actions]);
 
-  // Funções para bônus (sempre editáveis) - MODIFICADAS para permitir valores negativos
-  const incrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus + 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
-  const decrementarAtributoAncestralidade = (atributo) => {
-    if (
-      editandoPontosAtributoAncestralidade &&
-      (pontosAtributoAncestralidade[atributo] || 0) > 0
-    ) {
-      const novosPontos = {
-        ...pontosAtributoAncestralidade,
-        [atributo]: (pontosAtributoAncestralidade[atributo] || 0) - 1,
-      };
-      actions.updateAncestralidades({
-        pontosAtributoAncestralidade: novosPontos,
-      });
-    }
-  };
+  const decrementarBonus = React.useCallback((atributo) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: atributos[atributo].bonus - 1 } });
+  }, [atributos, actions]);
 
-  // Funções para bônus (sempre editáveis) - MODIFICADAS para permitir valores negativos
-  const incrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus + 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
+  const alterarBonus = React.useCallback((atributo, valor) => {
+    actions.updateAtributos({ ...atributos, [atributo]: { ...atributos[atributo], bonus: parseInt(valor) || 0 } });
+  }, [atributos, actions]);
 
-  const decrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus - 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
-  const decrementarBonus = (atributo) => {
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: atributos[atributo].bonus - 1,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
-
-  const alterarBonus = (atributo, valor) => {
-    const novoValor = parseInt(valor) || 0;
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: novoValor,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
-
-  // NOVAS FUNÇÕES: Atualizar movimentação
-  const atualizarMovimentacao = (campo, valor) => {
-  const alterarBonus = (atributo, valor) => {
-    const novoValor = parseInt(valor) || 0;
-    const novosAtributos = {
-      ...atributos,
-      [atributo]: {
-        ...atributos[atributo],
-        bonus: novoValor,
-      },
-    };
-    actions.updateAtributos(novosAtributos);
-  };
-
-  // NOVAS FUNÇÕES: Atualizar movimentação
-  const atualizarMovimentacao = (campo, valor) => {
+  const atualizarMovimentacao = React.useCallback((campo, valor) => {
     actions.updateMovimentacao({ [campo]: valor });
-  };
-  };
+  }, [actions]);
 
-  const atualizarMovimentacaoChoque = (campo, valor) => {
-    actions.updateMovimentacao({
-      choque: { ...movimentacao.choque, [campo]: valor },
-    });
-  };
-  const atualizarMovimentacaoChoque = (campo, valor) => {
-    actions.updateMovimentacao({
-      choque: { ...movimentacao.choque, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoChoque = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ choque: { ...movimentacao.choque, [campo]: valor } });
+  }, [actions, movimentacao.choque]);
 
-  const atualizarMovimentacaoRestricao = (campo, valor) => {
-    actions.updateMovimentacao({
-      restricao: { ...movimentacao.restricao, [campo]: valor },
-    });
-  };
-  const atualizarMovimentacaoRestricao = (campo, valor) => {
-    actions.updateMovimentacao({
-      restricao: { ...movimentacao.restricao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoRestricao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ restricao: { ...movimentacao.restricao, [campo]: valor } });
+  }, [actions, movimentacao.restricao]);
 
-  const atualizarMovimentacaoEvasao = (campo, valor) => {
-    actions.updateMovimentacao({
-      evasao: { ...movimentacao.evasao, [campo]: valor },
-    });
-  };
-  const atualizarMovimentacaoEvasao = (campo, valor) => {
-    actions.updateMovimentacao({
-      evasao: { ...movimentacao.evasao, [campo]: valor },
-    });
-  };
+  const atualizarMovimentacaoEvasao = React.useCallback((campo, valor) => {
+    actions.updateMovimentacao({ evasao: { ...movimentacao.evasao, [campo]: valor } });
+  }, [actions, movimentacao.evasao]);
 
-  const resetar = () => {
-  const resetar = () => {
+  const resetar = React.useCallback(() => {
     if (!atributosTrancados) {
       actions.updateAtributos({
         INT: { base: 1, ancestral: 0, bonus: 0 },
@@ -545,16 +361,13 @@ const FichaCJphant = () => {
         ESP: { base: 1, ancestral: 0, bonus: 0 },
       });
     }
-  };
-  };
+  }, [atributosTrancados, actions]);
 
-  const trancarAtributos = () => {
-  const trancarAtributos = () => {
+  const trancarAtributos = React.useCallback(() => {
     if (pontosRestantes === 0) {
       actions.setAtributosTrancados(true);
     }
-  };
-  };
+  }, [pontosRestantes, actions]);
 
   const adicionarHabilidade = React.useCallback(() => {
     const novaHabilidade = {
@@ -651,38 +464,23 @@ const FichaCJphant = () => {
   }, [actions, caracteristicasSelecionadas]);
 
   // Funções para distribuição de pontos de ancestralidade nos atributos
-  const iniciarDistribuicaoAncestral = () => {
-  const iniciarDistribuicaoAncestral = () => {
+  const iniciarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(true);
-  };
-  };
+  }, []);
 
-  const confirmarDistribuicaoAncestral = () => {
-  const confirmarDistribuicaoAncestral = () => {
+  const confirmarDistribuicaoAncestral = React.useCallback(() => {
     setEditandoAncestralAtributos(false);
     actions.updateAncestralidades({ distribuicaoAncestralConfirmada: true });
-  };
-  };
+  }, [actions]);
 
-  // Funções para distribuição de pontos de atributo de ancestralidade
-  const iniciarDistribuicaoAtributoAncestralidade = () => {
-  // Funções para distribuição de pontos de atributo de ancestralidade
-  const iniciarDistribuicaoAtributoAncestralidade = () => {
+  const iniciarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(true);
-  };
-  };
+  }, []);
 
-  const confirmarDistribuicaoAtributoAncestralidade = () => {
-  const confirmarDistribuicaoAtributoAncestralidade = () => {
+  const confirmarDistribuicaoAtributoAncestralidade = React.useCallback(() => {
     setEditandoPontosAtributoAncestralidade(false);
-    actions.updateAncestralidades({
-      distribuicaoAtributoAncestralidadeConfirmada: true,
-    });
-  };
-    actions.updateAncestralidades({
-      distribuicaoAtributoAncestralidadeConfirmada: true,
-    });
-  };
+    actions.updateAncestralidades({ distribuicaoAtributoAncestralidadeConfirmada: true });
+  }, [actions]);
 
 
   // Funções para Origens
@@ -825,8 +623,12 @@ const FichaCJphant = () => {
               onAtualizarEvasao={atualizarMovimentacaoEvasao}
             />
 
+<<<<<<< HEAD
             {/* Seção de Ancestralidades — componente isolado com React.memo */}
             {/* Seção de Ancestralidades — componente isolado com React.memo */}
+=======
+                        {/* Seção de Ancestralidades — componente isolado com React.memo */}
+>>>>>>> 9e30cf8 (fix(modal): extract ModalAnotacoes — fix formatarDataPtBr undefined scope bug)
             <AncestralSection
               ancestralidades={ancestralidades}
               ancestralidadesConfirmadas={ancestralidadesConfirmadas}
